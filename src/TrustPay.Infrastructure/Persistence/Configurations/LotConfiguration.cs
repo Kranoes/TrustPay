@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TrustPay.Domain.Entities;
+namespace TrustPay.Infrastructure.Persistence.Configurations
+{
+    public class LotConfiguration : IEntityTypeConfiguration<Lot> 
+
+    {
+    public void Configure(EntityTypeBuilder<Lot> builder)
+        {
+            
+            builder.Property(p => p.Title)
+                .IsRequired()
+                .HasMaxLength(100);
+            builder.Property(p => p.ItemsCount)
+                .IsRequired();
+            builder.HasOne(o => o.User)
+                .WithMany(m => m.Lots)
+                .HasForeignKey(l=>l.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            //Не удалять тег пока к нему привязан хотя бы один лот, удалять каскадно на мосту лот 
+            builder.HasMany(m => m.Tags)
+                .WithMany(m => m.Lots)
+                .UsingEntity<Dictionary<string, object>>(
+                "LotTag",
+                j => j.HasOne<Tag>()
+                .WithMany()
+                .HasForeignKey("TagId")
+                .OnDelete(DeleteBehavior.Restrict),
+                j => j.HasOne<Lot>()
+                .WithMany()
+                .HasForeignKey("LotId")
+                .OnDelete(DeleteBehavior.Cascade)
+                );
+
+            builder.HasOne(l => l.SubCategory)
+                .WithMany()
+                .HasForeignKey(l => l.SubCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+        }
+    }
+}

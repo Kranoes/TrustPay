@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <File Path="docker-compose.yml" />
+    <Project Path="src/TrustPay.Api/TrustPay.Api.csproj" />
+    <Project Path="src/TrustPay.Application/TrustPay.Application.csproj" />
+    <Project Path="src/TrustPay.Domain/TrustPay.Domain.csproj" />
+    <Project Path="src/TrustPay.Infrastructure/TrustPay.Infrastructure.csproj" />
+  </Folder>
+</Solution>
