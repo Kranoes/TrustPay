@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Folder Include="Orders\" />
+    <Folder Include="Disputes\" />
     <Folder Include="Reviews\" />
     <Folder Include="SubCategories\" />
   </ItemGroup>
