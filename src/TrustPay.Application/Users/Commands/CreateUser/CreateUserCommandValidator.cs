@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using FluentValidation;
+﻿using FluentValidation;
+using TrustPay.Application.Users.Commands.CreateUser;
 
-namespace TrustPay.Application.Users.Commands.CreateUser
+public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
-    public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
+    public CreateUserCommandValidator()
     {
-        public CreateUserCommandValidator()
-        {
-            RuleFor(x => x.Email)
-                .NotEmpty()
-                .WithMessage("Пустой email недопустим.")
-                .MaximumLength(100)
-                .WithMessage("Максимальная длина почты 100 символов.")
-                .EmailAddress()
-                .WithMessage("Некорректный формат email");
-            RuleFor(x => x.NickName)
-                .NotEmpty()
-                .WithMessage("Ник не может быть пустой.")
-                .MaximumLength(50)
-                .WithMessage("Максимальная длина ника 50 символов.");
-        }
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email обязателен.")
+            .EmailAddress().WithMessage("Некорректный формат email.");
+
+        RuleFor(x => x.NickName)
+            .NotEmpty().WithMessage("Никнейм обязателен.")
+            .MinimumLength(3).WithMessage("Никнейм должен содержать минимум 3 символа.");
+
+        RuleFor(x => x.Role)
+            .IsInEnum().WithMessage("Указана недопустимая роль пользователя.");
     }
 }
