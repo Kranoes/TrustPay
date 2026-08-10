@@ -13,6 +13,7 @@ namespace TrustPay.Application.Wallets.Commands.DepositMoney
                 .NotEmpty().WithMessage("ID кошелька обязателен.");
             RuleFor(x => x.Amount)
                 .GreaterThan(0).WithMessage("Сумма пополнения должна быть больше нуля");
+            RuleFor(x => x.Currency).NotEmpty().Length(3).WithMessage("Код валюты должен состоять из 3 символов.");
         }
     }
 }

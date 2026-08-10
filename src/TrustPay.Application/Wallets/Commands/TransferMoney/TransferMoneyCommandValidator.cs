@@ -9,8 +9,7 @@ namespace TrustPay.Application.Wallets.Commands.TransferMoney
     {
         public TransferMoneyCommandValidator() 
         {
-            RuleFor(x => x.Amount)
-                   .NotEmpty()  
+            RuleFor(x => x.Amount)  
                    .GreaterThan(0)
                    .WithMessage("Сумма перевода не может быть отрицательной или равняться нулю");
             RuleFor(x => x.Currency)

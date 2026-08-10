@@ -15,6 +15,7 @@ namespace TrustPay.Application.Wallets.Commands.CreateWallet
     {
         private readonly IWalletRepository _walletRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserRepository _userRepository;
 
         public CreateWalletCommandHandler(IWalletRepository walletRepository, IUnitOfWork unitOfWork)
         {
@@ -24,6 +25,16 @@ namespace TrustPay.Application.Wallets.Commands.CreateWallet
 
         public async Task<Result<Guid>> Handle(CreateWalletCommand request, CancellationToken cancellationToken)
         {
+            var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
+            if (user is null)
+            {
+                return Error.NotFound("User.NotFound", $"Пользователь с ID {request.UserId} не найден.");
+            }
+            var existingWallet = await _walletRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            if (existingWallet is not null)
+            {
+                return Error.Conflict("Wallet.AlreadyExists", "У этого пользователя уже создан кошелек.");
+            }
             var moneyResult = Money.Create(request.InitialAmount, request.Currency);
             if (moneyResult.IsFailure)
             {
