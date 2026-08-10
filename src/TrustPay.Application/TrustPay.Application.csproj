@@ -11,10 +11,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Disputes\" />
     <Folder Include="Orders\" />
     <Folder Include="Reviews\" />
     <Folder Include="SubCategories\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Users\Queries\GetUserByEmail\GetUserByEmailQuery.cs" />
   </ItemGroup>
 
   <PropertyGroup>

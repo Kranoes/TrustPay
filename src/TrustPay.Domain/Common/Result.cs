@@ -22,14 +22,14 @@ namespace TrustPay.Domain.Common
 
         public static Result Success() => new(true, Error.None);
 
-        // Перегрузка для нового формата
         public static Result Failure(Error error) => new(false, error);
-        // Перегрузка для старого формата (сохраняет работу 78 мест)
         public static Result Failure(string error) => new(false, error);
 
         public static Result<T> Success<T>(T value) => Result<T>.Success(value);
         public static Result<T> Failure<T>(Error error) => Result<T>.Failure(error);
         public static Result<T> Failure<T>(string error) => Result<T>.Failure(error);
+
+        public static implicit operator Result(Error error) => Failure(error);
     }
 
     public class Result<T> : Result

@@ -14,10 +14,17 @@ namespace TrustPay.Infrastructure.Persistence.Repositories
         {
             _context = context;
         }
+
         public async Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Categories
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        }
+        public async Task<List<Category>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Categories
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
         public async Task<Guid?> GetIdByTitle(string title, CancellationToken cancellationToken = default)
         {

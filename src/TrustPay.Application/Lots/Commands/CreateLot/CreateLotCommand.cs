@@ -1,11 +1,10 @@
-﻿using System;
+﻿namespace TrustPay.Application.Lots.Commands.CreateLot;
+
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Entities;
 using TrustPay.Domain.ValueObjects;
-
-namespace TrustPay.Application.Lots.Commands.CreateLot;
 
 public record CreateLotCommand(
     Guid UserId,
@@ -13,7 +12,9 @@ public record CreateLotCommand(
     string Title,
     decimal Amount,
     string Currency,
-    int ItemsCount) : IRequest<Result<Guid>>;
+    int ItemsCount
+) : IRequest<Result<Guid>>;
+
 public class CreateLotCommandHandler : IRequestHandler<CreateLotCommand, Result<Guid>>
 {
     private readonly ILotRepository _lotRepository;
@@ -35,13 +36,13 @@ public class CreateLotCommandHandler : IRequestHandler<CreateLotCommand, Result<
         var subCategory = await _subCategoryRepository.GetByIdAsync(request.SubCategoryId, cancellationToken);
         if (subCategory is null)
         {
-            return Result.Failure<Guid>("Указанная подкатегория не найдена.");
+            return Error.NotFound("SubCategory.NotFound", "Указанная подкатегория не найдена.");
         }
 
         var moneyResult = Money.Create(request.Amount, request.Currency);
         if (moneyResult.IsFailure)
         {
-            return Result.Failure<Guid>(moneyResult.Error);
+            return moneyResult.Error; 
         }
 
         var lotResult = Lot.Create(
@@ -53,7 +54,7 @@ public class CreateLotCommandHandler : IRequestHandler<CreateLotCommand, Result<
 
         if (lotResult.IsFailure)
         {
-            return Result.Failure<Guid>(lotResult.Error);
+            return lotResult.Error; 
         }
 
         var lot = lotResult.Value;
@@ -63,6 +64,6 @@ public class CreateLotCommandHandler : IRequestHandler<CreateLotCommand, Result<
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(lot.Id);
+        return lot.Id;
     }
 }

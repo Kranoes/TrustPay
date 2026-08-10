@@ -12,7 +12,7 @@ namespace TrustPay.Application.Common.Interfaces
         Task<List<Category>> FindBySubCategory(Guid subCategoryId, CancellationToken cancellationToken = default);
         Task<Guid?> GetIdByTitle(string title, CancellationToken cancellationToken = default);
         Task<List<Category>> FindByDescriptionKeywordsAsync(string[] keywords, CancellationToken cancellationToken = default);
-
+        Task<List<Category>> GetAllAsync(CancellationToken cancellationToken = default);
         void Update(Category category);
         void Delete(Category category);
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrustPay.Domain.Common;
 
@@ -8,6 +9,8 @@ namespace TrustPay.Api.Controllers
     [Route("api/v1/[controller]")]
     public abstract class ApiController : ControllerBase
     {
+        private ISender? _mediator;
+        protected ISender Mediator => _mediator ??= HttpContext.RequestServices.GetRequiredService<ISender>();
         protected IActionResult HandleResult(Result result)
         {
             if (result.IsSuccess)
