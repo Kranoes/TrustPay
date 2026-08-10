@@ -1,10 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace TrustPay.Application.Orders.Commands.UpdateOrderStatus;
 
-namespace TrustPay.Application.Orders.Commands.UpdateOrderStatus
+using FluentValidation;
+
+public class UpdateOrderStatusCommandValidator : AbstractValidator<UpdateOrderStatusCommand>
 {
-    internal class UpdateOrderStatusCommandValidator
+    public UpdateOrderStatusCommandValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty();
+
+        RuleFor(x => x.NewStatus)
+            .IsInEnum();
     }
 }

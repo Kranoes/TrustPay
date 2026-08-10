@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace TrustPay.Application.Orders.Queries.GetById;
 
-namespace TrustPay.Application.Orders.Queries.GetById
+using FluentValidation;
+
+public class GetOrderByIdQueryValidator : AbstractValidator<GetOrderByIdQuery>
 {
-    internal class GetOrderByIdQueryValidator
+    public GetOrderByIdQueryValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty();
     }
 }

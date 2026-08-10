@@ -1,10 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace TrustPay.Application.Orders.DTOs;
 
-namespace TrustPay.Application.Orders.DTOs
-{
-    internal class OrderResponse
-    {
-    }
-}
+public record OrderResponse(
+    Guid Id,
+    Guid CustomerId,
+    Guid ExecutorId,
+    Guid LotId,
+    int Quantity,
+    decimal PriceAmount,
+    string PriceCurrency,
+    string Status,
+    DateTime CreatedAt
+);

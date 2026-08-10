@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace TrustPay.Application.Orders.Commands.DeleteOrder;
 
-namespace TrustPay.Application.Orders.Commands.DeleteOrder
+using FluentValidation;
+
+public class DeleteOrderCommandValidator : AbstractValidator<DeleteOrderCommand>
 {
-    internal class DeleteOrderCommandValidator
+    public DeleteOrderCommandValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty();
     }
 }
