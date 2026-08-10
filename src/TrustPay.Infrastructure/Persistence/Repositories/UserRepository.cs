@@ -13,6 +13,14 @@ namespace TrustPay.Infrastructure.Persistence.Repositories
         {
             return await _context.Users.FirstOrDefaultAsync(u=>u.Id == userId,cancellationToken);
         }
+        public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserEmail == email, cancellationToken);
+        }
+        public async Task<User?> GetByWalletIdAsync(Guid walletId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Wallet != null && u.Wallet.Id == walletId, cancellationToken);
+        }
         public async Task AddAsync(User user, CancellationToken cancellationToken = default)
         {
             await _context.Users.AddAsync(user,cancellationToken);
@@ -25,6 +33,7 @@ namespace TrustPay.Infrastructure.Persistence.Repositories
         {
             _context.Users.Remove(user);
         }
+        
         public async Task<bool> IsEmailUnique(string email, CancellationToken cancellationToken = default)
         {
            return !await _context.Users.AnyAsync(u => u.UserEmail == email, cancellationToken);

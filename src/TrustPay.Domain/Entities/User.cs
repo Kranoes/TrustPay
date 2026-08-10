@@ -17,7 +17,6 @@ namespace TrustPay.Domain.Entities
         public DateTime CreatedAt { get; private set; }
         public UserRole Role { get; private set; }
 
-        public Guid? WalletId { get; private set; }
         public Wallet? Wallet { get; private set; }
 
         public IReadOnlyCollection<Lot> Lots => _lots.AsReadOnly();
@@ -77,23 +76,6 @@ namespace TrustPay.Domain.Entities
             return Result.Success();
         }
 
-        public Result AssignWallet(Guid walletId)
-        {
-            if (walletId == Guid.Empty)
-            {
-                return Result.Failure("Идентификатор кошелька не может быть пустым.");
-            }
-
-            if (WalletId == walletId)
-            {
-                return Result.Success();
-            }
-
-            WalletId = walletId;
-
-            AddDomainEvent(new UserWalletAssignedDomainEvent(Id, walletId));
-
-            return Result.Success();
-        }
+      
     }
 }

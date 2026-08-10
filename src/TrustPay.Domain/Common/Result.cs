@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace TrustPay.Domain.Common
 {
@@ -28,6 +28,7 @@ namespace TrustPay.Domain.Common
         public static Result<T> Success<T>(T value) => Result<T>.Success(value);
         public static Result<T> Failure<T>(Error error) => Result<T>.Failure(error);
         public static Result<T> Failure<T>(string error) => Result<T>.Failure(error);
+
         public static implicit operator Result(Error error) => Failure(error);
     }
 
