@@ -1,4 +1,6 @@
-﻿using System;
+﻿namespace TrustPay.Infrastructure.Persistence.Repositories;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -7,8 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using TrustPay.Application.Common.Interfaces;
 using TrustPay.Domain.Entities;
 using TrustPay.Domain.Enums;
-
-namespace TrustPay.Infrastructure.Persistence.Repositories;
 
 public class DisputeRepository : IDisputeRepository
 {
@@ -24,54 +24,29 @@ public class DisputeRepository : IDisputeRepository
         return await _context.Disputes
             .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
     }
-    public async Task<List<Dispute>> GetFilteredAsync(
-    DisputeStatus? status,
-    Guid? customerId,
-    Guid? executorId,
-    Guid? arbitratorId,
-    string[]? keywords,
-    CancellationToken cancellationToken = default)
+   
+    public async Task<List<Dispute>> FindByReasonKeywordsAsync(string[] keywords, CancellationToken cancellationToken = default)
     {
         var query = _context.Disputes.AsNoTracking().AsQueryable();
 
         if (status.HasValue)
-        {
             query = query.Where(d => d.Status == status.Value);
-        }
 
         if (customerId.HasValue)
-        {
             query = query.Where(d => d.CustomerId == customerId.Value);
-        }
 
         if (executorId.HasValue)
-        {
             query = query.Where(d => d.ExecutorId == executorId.Value);
-        }
 
         if (arbitratorId.HasValue)
-        {
             query = query.Where(d => d.ArbitratorId == arbitratorId.Value);
-        }
 
-        if (keywords is { Length: > 0 })
+        if (keywords != null && keywords.Length > 0)
         {
             query = query.Where(d => keywords.Any(k => EF.Functions.ILike(d.Reason, $"%{k}%")));
         }
 
         return await query.ToListAsync(cancellationToken);
-    }
-    public async Task<List<Dispute>> FindByReasonKeywordsAsync(string[] keywords, CancellationToken cancellationToken = default)
-    {
-        if (keywords is null || keywords.Length == 0)
-        {
-            return new List<Dispute>();
-        }
-
-        return await _context.Disputes
-            .AsNoTracking()
-            .Where(c => keywords.Any(k => EF.Functions.ILike(c.Reason, $"%{k}%")))
-            .ToListAsync(cancellationToken);
     }
 
     public async Task<Guid?> GetCustomerIdByDisputeAsync(Guid disputeId, CancellationToken cancellationToken = default)

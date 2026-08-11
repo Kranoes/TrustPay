@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
@@ -11,8 +11,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Orders\" />
     <Folder Include="Disputes\" />
     <Folder Include="SubCategories\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Users\Queries\GetUserByEmail\GetUserByEmailQuery.cs" />
   </ItemGroup>
 
   <PropertyGroup>

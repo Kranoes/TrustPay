@@ -12,7 +12,7 @@ namespace TrustPay.Application
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            var assembly = typeof(FreezeWalletCommand).Assembly;
+            var assembly = typeof(DependencyInjection).Assembly;
             services.AddValidatorsFromAssembly(assembly);
             services.AddMediatR(cfg =>
                 {

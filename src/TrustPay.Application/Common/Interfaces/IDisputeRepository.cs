@@ -10,13 +10,7 @@ using TrustPay.Domain.Enums;
 public interface IDisputeRepository
 {
     Task<Dispute?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<List<Dispute>> GetFilteredAsync(
-        DisputeStatus? status,
-        Guid? customerId,
-        Guid? executorId,
-        Guid? arbitratorId,
-        string[]? keywords,
-        CancellationToken cancellationToken = default);
+    
     Task<List<Dispute>> FindByReasonKeywordsAsync(string[] keywords, CancellationToken cancellationToken = default);
     Task<Guid?> GetCustomerIdByDisputeAsync(Guid disputeId, CancellationToken cancellationToken = default);
     Task<Guid?> GetExecutorIdByDisputeAsync(Guid disputeId, CancellationToken cancellationToken = default);
