@@ -9,7 +9,6 @@ using TrustPay.Domain.Interfaces;
 using TrustPay.Infrastructure.Persistence;
 using TrustPay.Infrastructure.Persistence.Interceptors;
 using TrustPay.Infrastructure.Persistence.Repositories;
-using TrustPay.Infrastructure.Repositories;
 
 namespace TrustPay.Infrastructure
 {
