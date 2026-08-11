@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using TrustPay.Application.Common.Interfaces;
@@ -28,6 +29,7 @@ namespace TrustPay.Infrastructure
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.HasPostgresExtension("citext");
             builder.Entity<Wallet>(builder =>
             {
                 builder.ComplexProperty(w => w.AvailableBalance);
