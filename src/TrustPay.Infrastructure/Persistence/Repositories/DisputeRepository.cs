@@ -24,29 +24,18 @@ public class DisputeRepository : IDisputeRepository
         return await _context.Disputes
             .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
     }
-   
+
     public async Task<List<Dispute>> FindByReasonKeywordsAsync(string[] keywords, CancellationToken cancellationToken = default)
     {
-        var query = _context.Disputes.AsNoTracking().AsQueryable();
-
-        if (status.HasValue)
-            query = query.Where(d => d.Status == status.Value);
-
-        if (customerId.HasValue)
-            query = query.Where(d => d.CustomerId == customerId.Value);
-
-        if (executorId.HasValue)
-            query = query.Where(d => d.ExecutorId == executorId.Value);
-
-        if (arbitratorId.HasValue)
-            query = query.Where(d => d.ArbitratorId == arbitratorId.Value);
-
-        if (keywords != null && keywords.Length > 0)
+        if (keywords == null || keywords.Length == 0)
         {
-            query = query.Where(d => keywords.Any(k => EF.Functions.ILike(d.Reason, $"%{k}%")));
+            return new List<Dispute>();
         }
 
-        return await query.ToListAsync(cancellationToken);
+        return await _context.Disputes
+            .AsNoTracking()
+            .Where(d => keywords.Any(k => EF.Functions.Like(d.Reason, $"%{k}%")))
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Guid?> GetCustomerIdByDisputeAsync(Guid disputeId, CancellationToken cancellationToken = default)

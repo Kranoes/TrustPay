@@ -1,8 +1,10 @@
 ﻿namespace TrustPay.Application.Disputes.Commands.ChangeDisputeStatus;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
-using TrustPay.Application.Common.Models;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Enums;
 

@@ -1,9 +1,9 @@
-﻿using System;
+﻿namespace TrustPay.Domain.Entities;
+
+using System;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Enums;
 using TrustPay.Domain.Events.DisputeEvents;
-
-namespace TrustPay.Domain.Entities;
 
 public class Dispute : AggregateRoot<Guid>
 {
@@ -101,21 +101,18 @@ public class Dispute : AggregateRoot<Guid>
         {
             return Result.Failure("Решение по спору может быть вынесено только во время рассмотрения.");
         }
-        public Result Cancel()
-        {
-            if (Status is DisputeStatus.ResolvedForBuyer or DisputeStatus.ResolvedForSeller or DisputeStatus.Cancelled)
-            {
-                return Result.Failure("Нельзя отменить уже закрытый или ранее отмененный спор.");
-            }
 
-            Status = DisputeStatus.Cancelled;
+        Status = DisputeStatus.ResolvedForBuyer;
+        ResolvedAt = DateTime.UtcNow;
 
-            AddDomainEvent(new DisputeCancelledDomainEvent(Id, OrderId));
+        AddDomainEvent(new DisputeResolvedInFavorOfCustomerDomainEvent(Id, OrderId));
 
-            return Result.Success();
-        }
+        return Result.Success();
+    }
 
-        public Result ResolveInFavorOfExecutor()
+    public Result ResolveInFavorOfExecutor()
+    {
+        if (Status != DisputeStatus.UnderReview)
         {
             return Result.Failure("Решение по спору может быть вынесено только во время рассмотрения.");
         }
@@ -130,13 +127,15 @@ public class Dispute : AggregateRoot<Guid>
 
     public Result Cancel()
     {
-        if (Status != DisputeStatus.Opened && Status != DisputeStatus.UnderReview)
+        if (Status is DisputeStatus.ResolvedForBuyer or DisputeStatus.ResolvedForSeller or DisputeStatus.Cancelled)
         {
-            return Result.Failure("Нельзя отменить спор, по которому уже вынесено решение.");
+            return Result.Failure("Нельзя отменить уже закрытый или ранее отмененный спор.");
         }
 
         Status = DisputeStatus.Cancelled;
         ResolvedAt = DateTime.UtcNow;
+
+        AddDomainEvent(new DisputeCancelledDomainEvent(Id, OrderId));
 
         return Result.Success();
     }
