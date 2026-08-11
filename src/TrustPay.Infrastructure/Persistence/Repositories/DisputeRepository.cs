@@ -24,7 +24,43 @@ public class DisputeRepository : IDisputeRepository
         return await _context.Disputes
             .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
     }
+    public async Task<List<Dispute>> GetFilteredAsync(
+    DisputeStatus? status,
+    Guid? customerId,
+    Guid? executorId,
+    Guid? arbitratorId,
+    string[]? keywords,
+    CancellationToken cancellationToken = default)
+    {
+        var query = _context.Disputes.AsNoTracking().AsQueryable();
 
+        if (status.HasValue)
+        {
+            query = query.Where(d => d.Status == status.Value);
+        }
+
+        if (customerId.HasValue)
+        {
+            query = query.Where(d => d.CustomerId == customerId.Value);
+        }
+
+        if (executorId.HasValue)
+        {
+            query = query.Where(d => d.ExecutorId == executorId.Value);
+        }
+
+        if (arbitratorId.HasValue)
+        {
+            query = query.Where(d => d.ArbitratorId == arbitratorId.Value);
+        }
+
+        if (keywords is { Length: > 0 })
+        {
+            query = query.Where(d => keywords.Any(k => EF.Functions.ILike(d.Reason, $"%{k}%")));
+        }
+
+        return await query.ToListAsync(cancellationToken);
+    }
     public async Task<List<Dispute>> FindByReasonKeywordsAsync(string[] keywords, CancellationToken cancellationToken = default)
     {
         if (keywords is null || keywords.Length == 0)

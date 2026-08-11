@@ -10,7 +10,8 @@ namespace TrustPay.Domain.Enums
         UnderReview,
         ResolvedForBuyer,
         ResolvedForSeller,
-        Closed
+        Closed,
+        Cancelled
 
     }
 }

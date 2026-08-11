@@ -110,8 +110,20 @@ namespace TrustPay.Domain.Entities
 
             return Result.Success();
         }
+        public Result Cancel()
+        {
+            if (Status is DisputeStatus.ResolvedForBuyer or DisputeStatus.ResolvedForSeller or DisputeStatus.Cancelled)
+            {
+                return Result.Failure("Нельзя отменить уже закрытый или ранее отмененный спор.");
+            }
 
-       
+            Status = DisputeStatus.Cancelled;
+
+            AddDomainEvent(new DisputeCancelledDomainEvent(Id, OrderId));
+
+            return Result.Success();
+        }
+
         public Result ResolveInFavorOfExecutor()
         {
             if (Status != DisputeStatus.UnderReview)

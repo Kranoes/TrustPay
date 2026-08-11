@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TrustPay.Application.Users.Commands.CreateUser;
-using TrustPay.Application.Users.Queires;
+using TrustPay.Application.Users.Queries.GetUserById;
 using TrustPay.Application.Wallets.Queries.GetWalletByUserId;
 
 namespace TrustPay.Api.Controllers

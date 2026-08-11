@@ -6,9 +6,11 @@ using TrustPay.Application.Common.Interfaces;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Enums;
 
-namespace TrustPay.Application.Wallets.Queries.GetWalletById
-{
-    public class GetWalletByIdQueryHandler : IRequestHandler<GetWalletByIdQuery, Result<WalletResponse>>
+namespace TrustPay.Application.Wallets.Queries.GetWalletById;
+
+public record GetWalletByIdQuery(Guid WalletId) : IRequest<Result<WalletResponse>>;
+
+public class GetWalletByIdQueryHandler : IRequestHandler<GetWalletByIdQuery, Result<WalletResponse>>
     {
         private readonly IWalletRepository _walletRepository;
         public GetWalletByIdQueryHandler(IWalletRepository walletRepository)
@@ -28,4 +30,4 @@ namespace TrustPay.Application.Wallets.Queries.GetWalletById
             return Result.Success(response);
         }
     }
-}
+
