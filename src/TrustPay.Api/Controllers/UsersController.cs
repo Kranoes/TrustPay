@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrustPay.Application.Users.Commands.ChangeUserRole;
 using TrustPay.Application.Users.Commands.CreateUser;
+using TrustPay.Application.Users.Queries.GetUserById;
+using TrustPay.Application.Wallets.Queries.GetWalletByUserId;
 using TrustPay.Application.Users.Commands.UpdateUserProfile;
 using TrustPay.Application.Users.DTO;
 using TrustPay.Application.Users.Queries;

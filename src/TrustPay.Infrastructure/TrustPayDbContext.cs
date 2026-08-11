@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using TrustPay.Application.Common.Interfaces;
 using TrustPay.Domain.Entities;
 using TrustPay.Domain.ValueObjects;
 namespace TrustPay.Infrastructure
 {
-    public class TrustPayDbContext :DbContext
+    public class TrustPayDbContext :DbContext , ITrustPayDbContext
     {
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<Dispute> Disputes => Set<Dispute>();

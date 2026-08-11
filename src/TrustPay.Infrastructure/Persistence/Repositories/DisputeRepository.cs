@@ -24,17 +24,8 @@ public class DisputeRepository : IDisputeRepository
         return await _context.Disputes
             .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
     }
-
-    /// <summary>
-    /// Универсальное получение списка споров с фильтрацией
-    /// </summary>
-    public async Task<List<Dispute>> GetFilteredAsync(
-        DisputeStatus? status,
-        Guid? customerId,
-        Guid? executorId,
-        Guid? arbitratorId,
-        string[]? keywords,
-        CancellationToken cancellationToken = default)
+   
+    public async Task<List<Dispute>> FindByReasonKeywordsAsync(string[] keywords, CancellationToken cancellationToken = default)
     {
         var query = _context.Disputes.AsNoTracking().AsQueryable();
 

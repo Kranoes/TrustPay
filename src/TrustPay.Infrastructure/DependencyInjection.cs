@@ -26,6 +26,7 @@ namespace TrustPay.Infrastructure
                 var interceptor = sp.GetRequiredService<DispatchDomainEventsInterceptor>();
                 options.UseNpgsql(connectionString, npgsqloptions => npgsqloptions.MigrationsAssembly("TrustPay.Infrastructure")).AddInterceptors(interceptor);
             });
+            services.AddScoped<ITrustPayDbContext>(provider => provider.GetRequiredService<TrustPayDbContext>());
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ITransactionRepository, TransactionRepository>();
             services.AddScoped<IWalletRepository, WalletRepository>();

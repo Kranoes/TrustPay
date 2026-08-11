@@ -13,7 +13,6 @@
   <ItemGroup>
     <Folder Include="Orders\" />
     <Folder Include="Disputes\" />
-    <Folder Include="Reviews\" />
     <Folder Include="SubCategories\" />
   </ItemGroup>
 

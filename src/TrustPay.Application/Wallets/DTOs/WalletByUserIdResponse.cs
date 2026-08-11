@@ -1,4 +1,4 @@
-﻿namespace TrustPay.Application.Wallets.Queries.WalletByUserIdResponse;
+﻿namespace TrustPay.Application.Wallets.DTOs;
 
 public record WalletByUserIdResponse(
         Guid Id,

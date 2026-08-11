@@ -101,18 +101,21 @@ public class Dispute : AggregateRoot<Guid>
         {
             return Result.Failure("Решение по спору может быть вынесено только во время рассмотрения.");
         }
+        public Result Cancel()
+        {
+            if (Status is DisputeStatus.ResolvedForBuyer or DisputeStatus.ResolvedForSeller or DisputeStatus.Cancelled)
+            {
+                return Result.Failure("Нельзя отменить уже закрытый или ранее отмененный спор.");
+            }
 
-        Status = DisputeStatus.ResolvedForBuyer;
-        ResolvedAt = DateTime.UtcNow;
+            Status = DisputeStatus.Cancelled;
 
-        AddDomainEvent(new DisputeResolvedInFavorOfCustomerDomainEvent(Id, OrderId));
+            AddDomainEvent(new DisputeCancelledDomainEvent(Id, OrderId));
 
-        return Result.Success();
-    }
+            return Result.Success();
+        }
 
-    public Result ResolveInFavorOfExecutor()
-    {
-        if (Status != DisputeStatus.UnderReview)
+        public Result ResolveInFavorOfExecutor()
         {
             return Result.Failure("Решение по спору может быть вынесено только во время рассмотрения.");
         }

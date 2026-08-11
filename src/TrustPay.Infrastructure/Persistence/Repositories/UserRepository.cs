@@ -25,6 +25,18 @@ namespace TrustPay.Infrastructure.Persistence.Repositories
         {
             await _context.Users.AddAsync(user,cancellationToken);
         }
+        public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+        {
+            return await _context.Users
+                .Include(u => u.Wallet)
+                .FirstOrDefaultAsync(u => u.UserEmail == email, cancellationToken);
+        }
+        public async Task<User?> GetByWalletIdAsync(Guid walletId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Users
+                .Include(u => u.Wallet)
+                .FirstOrDefaultAsync(u => u.Wallet != null && u.Wallet.Id == walletId, cancellationToken);
+        }
         public void Update(User user)
         {
             _context.Users.Update(user);
