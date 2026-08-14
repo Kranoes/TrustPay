@@ -19,15 +19,15 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
                 .IsRequired();
             builder.Property(p => p.CreatedAt)
                 .IsRequired();
-            builder.HasOne(o => o.Customer)
+            builder.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(f => f.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne(o => o.Executor)
+            builder.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(f => f.ExecutorId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne(o => o.Lot)
+            builder.HasOne<Lot>()
                 .WithMany()
                 .HasForeignKey(o => o.LotId)
                 .OnDelete(DeleteBehavior.Restrict);

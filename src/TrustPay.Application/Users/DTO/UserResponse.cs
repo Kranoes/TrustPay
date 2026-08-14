@@ -5,6 +5,6 @@ using TrustPay.Domain.Enums;
 
 namespace TrustPay.Application.Users.DTO
 {
-    public record UserResponse(Guid Id, Guid? WalletId, string Email, string NickName,UserRole Role);
+    public record UserResponse(Guid Id, string Email, string NickName,UserRole Role);
     
 }

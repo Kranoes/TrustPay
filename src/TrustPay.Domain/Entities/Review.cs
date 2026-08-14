@@ -12,7 +12,6 @@ namespace TrustPay.Domain.Entities
         public int Rating { get; private set; }
         public DateTime CreatedAt { get; private set; }
 
-        public Order Order { get; private set; } = null!;
 
         private Review() { }
 

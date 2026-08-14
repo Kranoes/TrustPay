@@ -26,7 +26,6 @@ public class GetUserByEmailQueryHandler : IRequestHandler<GetUserByEmailQuery, R
 
         var response = new UserResponse(
             user.Id,
-            user.Wallet?.Id,
             user.UserEmail,
             user.UserName,
             user.Role);
