@@ -38,8 +38,8 @@ public class DisputeConfiguration : IEntityTypeConfiguration<Dispute>
         builder.Property(d => d.ArbitratorId)
             .IsRequired(false);
 
-        builder.HasOne(d => d.Order)
-            .WithOne(o => o.Dispute)
+        builder.HasOne<Order>()
+            .WithOne()
             .HasForeignKey<Dispute>(d => d.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
 

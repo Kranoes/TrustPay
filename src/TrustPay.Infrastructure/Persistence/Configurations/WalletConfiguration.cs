@@ -15,7 +15,10 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
             builder.HasKey(w => w.Id);
             builder.Property(w => w.Version)
                 .IsRowVersion();
-
+            builder.HasOne<User>()
+                .WithOne()
+                .HasForeignKey<Wallet>(w => w.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
