@@ -19,8 +19,6 @@ namespace TrustPay.Domain.Entities
 
         public IReadOnlyCollection<Tag> Tags => _tags.AsReadOnly();
 
-        public User User { get; private set; } = null!;
-        public SubCategory SubCategory { get; private set; } = null!;
 
         private Lot() { }
 

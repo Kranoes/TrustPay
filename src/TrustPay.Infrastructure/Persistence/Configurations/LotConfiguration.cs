@@ -17,8 +17,8 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
                 .HasMaxLength(100);
             builder.Property(p => p.ItemsCount)
                 .IsRequired();
-            builder.HasOne(o => o.User)
-                .WithMany(m => m.Lots)
+            builder.HasOne<User>()
+                .WithMany()
                 .HasForeignKey(l=>l.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
             //Не удалять тег пока к нему привязан хотя бы один лот, удалять каскадно на мосту лот 
@@ -36,7 +36,7 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Cascade)
                 );
 
-            builder.HasOne(l => l.SubCategory)
+            builder.HasOne<SubCategory>()
                 .WithMany()
                 .HasForeignKey(l => l.SubCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);

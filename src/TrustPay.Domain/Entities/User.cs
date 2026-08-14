@@ -21,7 +21,6 @@ namespace TrustPay.Domain.Entities
         public IReadOnlyCollection<RefreshToken> RefreshTokens => _refreshTokens.AsReadOnly();
         private const int MaxActiveTokens = 5;
 
-        public IReadOnlyCollection<Lot> Lots => _lots.AsReadOnly();
 
         private User() { }
 
