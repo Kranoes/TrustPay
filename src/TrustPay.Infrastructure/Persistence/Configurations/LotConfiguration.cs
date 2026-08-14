@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrustPay.Domain.Entities;
@@ -15,13 +16,25 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
             builder.Property(p => p.Title)
                 .IsRequired()
                 .HasMaxLength(100);
+
             builder.Property(p => p.ItemsCount)
                 .IsRequired();
+
             builder.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(l=>l.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-            //Не удалять тег пока к нему привязан хотя бы один лот, удалять каскадно на мосту лот 
+            builder.OwnsOne(l => l.Cost, costBuilder =>
+            {
+                costBuilder.Property(m => m.Amount)
+                .HasPrecision(18, 2)
+                .IsRequired();
+                costBuilder.Property(m => m.Currency)
+                .HasMaxLength(3)
+                .IsRequired();
+            });
+
+
             builder.HasMany(m => m.Tags)
                 .WithMany(m => m.Lots)
                 .UsingEntity<Dictionary<string, object>>(
