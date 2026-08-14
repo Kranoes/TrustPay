@@ -1,4 +1,4 @@
-﻿namespace TrustPay.Application.Common.Interfaces;
+﻿namespace TrustPay.Application.Common.Interfaces.EntitiesRepo;
 
 using TrustPay.Domain.Entities;
 

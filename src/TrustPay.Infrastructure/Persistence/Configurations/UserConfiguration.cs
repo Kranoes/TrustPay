@@ -25,8 +25,8 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
             builder.Property(u => u.UserName)
                 .HasColumnType("citext")
                 .IsRequired();
-            builder.HasOne(w => w.Wallet)
-                .WithOne(u => u.User)
+            builder.HasOne<User>()
+                .WithOne()
                 .HasForeignKey<Wallet>(w=>w.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
             builder.HasIndex(u => u.UserEmail).IsUnique();

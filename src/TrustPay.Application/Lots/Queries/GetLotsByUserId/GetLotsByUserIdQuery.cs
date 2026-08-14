@@ -1,7 +1,7 @@
 ﻿namespace TrustPay.Application.Lots.Queries.GetLotsByUserId;
 
 using MediatR;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Lots.DTOs;
 using TrustPay.Domain.Common;
 

@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Entities;
 
 public class UserRepository : IUserRepository
@@ -18,21 +18,37 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+    }
+
+    public async Task<User?> GetByIdWithTokensAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .Include(u => u.RefreshTokens)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
     }
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         return await _context.Users
-            .Include(u => u.Wallet)
+            .Include(u => u.RefreshTokens)
             .FirstOrDefaultAsync(u => u.UserEmail == email, cancellationToken);
+    }
+
+    public async Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .Include(u => u.RefreshTokens)
+            .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == refreshToken), cancellationToken);
     }
 
     public async Task<User?> GetByWalletIdAsync(Guid walletId, CancellationToken cancellationToken = default)
     {
-        return await _context.Users
-            .Include(u => u.Wallet)
-            .FirstOrDefaultAsync(u => u.Wallet != null && u.Wallet.Id == walletId, cancellationToken);
+        return await _context.Wallets
+            .Where(w => w.Id == walletId)
+            .Select(w => w.User)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
@@ -50,12 +66,12 @@ public class UserRepository : IUserRepository
         _context.Users.Remove(user);
     }
 
-    public async Task<bool> IsEmailUnique(string email, CancellationToken cancellationToken = default)
+    public async Task<bool> IsEmailUniqueAsync(string email, CancellationToken cancellationToken = default)
     {
         return !await _context.Users.AnyAsync(u => u.UserEmail == email, cancellationToken);
     }
 
-    public async Task<bool> IsNickNameUnique(string nickName, CancellationToken cancellationToken = default)
+    public async Task<bool> IsNickNameUniqueAsync(string nickName, CancellationToken cancellationToken = default)
     {
         return !await _context.Users.AnyAsync(u => u.UserName == nickName, cancellationToken);
     }

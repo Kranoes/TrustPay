@@ -1,7 +1,7 @@
 ﻿namespace TrustPay.Application.Reviews.Queries.GetByOrderId;
 
 using MediatR;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Reviews.DTOs;
 using TrustPay.Domain.Common;
 
