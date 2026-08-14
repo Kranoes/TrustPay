@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using MediatR;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Wallets.Queries.GetWalletById;
 using TrustPay.Domain.Common;
 

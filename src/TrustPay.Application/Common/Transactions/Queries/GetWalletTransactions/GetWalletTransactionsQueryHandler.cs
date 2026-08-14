@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Common.Models;
 using TrustPay.Application.Common.Transactions.DTOs;
 using TrustPay.Application.Common.Transactions.Queries.GetWalletTransactions;

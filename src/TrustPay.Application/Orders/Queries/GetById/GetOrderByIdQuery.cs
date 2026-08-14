@@ -1,7 +1,7 @@
 ﻿namespace TrustPay.Application.Orders.Queries.GetById;
 
 using MediatR;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Orders.DTOs;
 using TrustPay.Domain.Common;
 

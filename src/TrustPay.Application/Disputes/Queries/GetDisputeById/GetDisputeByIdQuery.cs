@@ -1,7 +1,7 @@
 ﻿namespace TrustPay.Application.Disputes.Queries.GetDisputeById;
 
 using MediatR;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Common.Models;
 using TrustPay.Application.Disputes.DTOs;
 using TrustPay.Domain.Common;

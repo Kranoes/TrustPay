@@ -2,6 +2,7 @@
 
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 
 public record UpdateUserProfileCommand(
@@ -30,7 +31,7 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
 
         if (!string.Equals(user.UserEmail, request.Email, StringComparison.OrdinalIgnoreCase))
         {
-            bool isEmailUnique = await _userRepository.IsEmailUnique(request.Email, cancellationToken);
+            bool isEmailUnique = await _userRepository.IsEmailUniqueAsync(request.Email, cancellationToken);
             if (!isEmailUnique)
             {
                 return Error.Conflict("User.EmailNotUnique", "Этот email уже занят другим пользователем.");
@@ -39,7 +40,7 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
 
         if (!string.Equals(user.UserName, request.NickName, StringComparison.OrdinalIgnoreCase))
         {
-            bool isNickUnique = await _userRepository.IsNickNameUnique(request.NickName, cancellationToken);
+            bool isNickUnique = await _userRepository.IsNickNameUniqueAsync(request.NickName, cancellationToken);
             if (!isNickUnique)
             {
                 return Error.Conflict("User.NickNameNotUnique", "Этот никнейм уже занят.");

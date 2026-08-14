@@ -30,7 +30,7 @@ public class UsersController : ApiController
         [FromBody] CreateUserRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new CreateUserCommand(request.Email, request.NickName, request.Role);
+        var command = new CreateUserCommand(request.Email, request.NickName,request.passwordHash, request.Role);
         var result = await Mediator.Send(command, cancellationToken);
 
         return HandleCreatedResult(
@@ -112,6 +112,6 @@ public class UsersController : ApiController
 }
 
 // Request DTOs
-public record CreateUserRequest(string Email, string NickName, UserRole Role = UserRole.User);
+public record CreateUserRequest(string Email, string NickName,string passwordHash, UserRole Role = UserRole.User);
 public record UpdateUserProfileRequest(string Email, string NickName);
 public record ChangeUserRoleRequest(UserRole NewRole);

@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using TrustPay.Application.Categories.DTOs;
 using TrustPay.Application.Categories.Queries.GetCategoryById;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 
 public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery, Result<CategoryResponse>>

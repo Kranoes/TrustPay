@@ -5,6 +5,7 @@ using MediatR;
 using TrustPay.Domain.Common;
 using TrustPay.Application.Lots.DTOs;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 namespace TrustPay.Application.Lots.Queries.GetById
 {
     public record GetByIdQuery(Guid Id) : IRequest<Result<LotResponse>>;

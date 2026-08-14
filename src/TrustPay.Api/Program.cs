@@ -1,5 +1,6 @@
-
 using System.Reflection;
+using Microsoft.OpenApi;
+using Scalar.AspNetCore;
 using TrustPay.Application;
 using TrustPay.Infrastructure;
 
@@ -9,31 +10,48 @@ builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
+builder.Services.AddOpenApi(options =>
 {
-    var apiXmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var apiXmlPath = Path.Combine(AppContext.BaseDirectory, apiXmlFile);
-    options.IncludeXmlComments(apiXmlPath);
-    var applicationAssembly = typeof(TrustPay.Application.DependencyInjection).Assembly;
-    var applicationXmlFile = $"{applicationAssembly.GetName().Name}.xml";
-    var applicationXmlPath = Path.Combine(AppContext.BaseDirectory, applicationXmlFile);
-
-    if (File.Exists(applicationXmlPath))
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
-        options.IncludeXmlComments(applicationXmlPath);
-    }
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Введите JWT токен"
+    };
+    document.Components ??= new OpenApiComponents();
+    document.Components.SecuritySchemes["Bearer"] = securityScheme;
+    var securityRequirement = new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer",document)] = new List<string>()
+    };
+        document.Security ??= new List<OpenApiSecurityRequirement>();
+        document.Security.Add(securityRequirement);
+    return Task.CompletedTask;
+    });
 });
 
+    
+
+  
 
 var app = builder.Build();
-if(app.Environment.IsDevelopment())
+
+if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();

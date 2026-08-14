@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Entities;
-using TrustPay.Domain.Interfaces;
 
 public record CreateTagCommand(string Name) : IRequest<Result<Guid>>;
 

@@ -1,7 +1,7 @@
 ﻿namespace TrustPay.Application.Users.Queries.GetUserByEmail;
 
 using MediatR;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Users.DTO;
 using TrustPay.Domain.Common;
 

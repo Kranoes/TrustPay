@@ -3,6 +3,7 @@
 using FluentValidation;
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 
 public record DeleteReviewCommand(Guid Id) : IRequest<Result>;

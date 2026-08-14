@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TrustPay.Domain.Entities;
 
-namespace TrustPay.Application.Common.Interfaces;
+namespace TrustPay.Application.Common.Interfaces.EntitiesRepo;
 
 public interface ILotRepository
 {

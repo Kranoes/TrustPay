@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using TrustPay.Domain.Entities;
 
-namespace TrustPay.Application.Common.Interfaces
+namespace TrustPay.Application.Common.Interfaces.EntitiesRepo
 {
     public interface IWalletRepository
     {

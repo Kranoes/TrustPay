@@ -2,7 +2,7 @@
 
 using MediatR;
 using TrustPay.Application.Categories.DTOs;
-using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Common.Models;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Entities;
