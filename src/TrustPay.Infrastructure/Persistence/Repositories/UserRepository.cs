@@ -45,12 +45,12 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByWalletIdAsync(Guid walletId, CancellationToken cancellationToken = default)
     {
-        return await _context.Wallets
-            .Where(w => w.Id == walletId)
-            .Select(w => w.User)
-            .FirstOrDefaultAsync(cancellationToken);
+        return await (from user in _context.Users
+                      join wallet in _context.Wallets on user.Id equals wallet.UserId
+                      where wallet.Id == walletId
+                      select user)
+                     .FirstOrDefaultAsync(cancellationToken);
     }
-
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
         await _context.Users.AddAsync(user, cancellationToken);

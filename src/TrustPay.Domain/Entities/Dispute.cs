@@ -16,7 +16,6 @@ public class Dispute : AggregateRoot<Guid>
     public DateTime CreatedAt { get; private set; }
     public DateTime? ResolvedAt { get; private set; }
 
-    public Order Order { get; private set; } = null!;
 
     private Dispute() { }
 
