@@ -21,8 +21,6 @@ public class OrderRepository : IOrderRepository
     public async Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Orders
-            .Include(o => o.Dispute)
-            .Include(o => o.Review)
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
     }
 
@@ -45,7 +43,7 @@ public class OrderRepository : IOrderRepository
     public async Task<Order?> GetByDisputeIdAsync(Guid disputeId, CancellationToken cancellationToken = default)
     {
         return await _context.Orders
-            .FirstOrDefaultAsync(o => o.Dispute != null && o.Dispute.Id == disputeId, cancellationToken);
+            .FirstOrDefaultAsync(o => o.DisputeId == disputeId, cancellationToken);
     }
 
     public async Task AddAsync(Order order, CancellationToken cancellationToken = default)

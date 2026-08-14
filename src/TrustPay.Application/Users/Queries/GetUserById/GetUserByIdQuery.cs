@@ -28,7 +28,6 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<
 
         var response = new UserResponse(
             user.Id,
-            user.Wallet?.Id,
             user.UserEmail,
             user.UserName,
             user.Role);

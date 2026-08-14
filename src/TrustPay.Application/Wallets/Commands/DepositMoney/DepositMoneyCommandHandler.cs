@@ -6,6 +6,11 @@ using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.ValueObjects;
 
+public record DepositMoneyCommand (
+    Guid WalletId,
+    decimal Amount,
+    string Currency
+    ) : IRequest<Result>;   
 public class DepositMoneyCommandHandler : IRequestHandler<DepositMoneyCommand, Result>
 {
     private readonly IWalletRepository _walletRepository;

@@ -14,7 +14,6 @@ namespace TrustPay.Domain.Entities
         public Money LockedBalance { get; private set; } = null!;
         public uint Version { get; private set; }
         
-        public User? User { get; private set; }
 
         private Wallet() { }
 

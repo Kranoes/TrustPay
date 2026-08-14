@@ -17,11 +17,9 @@ namespace TrustPay.Domain.Entities
         public DateTime CreatedAt { get; private set; }
         public uint Version { get; private set; }
 
-        public Dispute? Dispute { get; private set; }
-        public Review? Review { get; private set; }
-        public User Customer { get; private set; } = null!;
-        public User Executor { get; private set; } = null!;
-        public Lot Lot { get; private set; } = null!;
+        public Guid? DisputeId { get; private set; }
+        public Guid? ReviewId { get; private set; }
+       
 
         private Order() { }
 
@@ -121,48 +119,47 @@ namespace TrustPay.Domain.Entities
         }
 
       
-        public Result AttachDispute(Dispute dispute)
+        public Result AttachDispute(Guid disputeId)
         {
-            if (dispute is null)
+            if (disputeId == Guid.Empty)
             {
-                return Result.Failure("Спор не может быть null.");
+                return Result.Failure("Идентификатор спора не может быть пустым.");
             }
 
-            if (Dispute is not null)
+            if (DisputeId != Guid.Empty)
             {
                 return Result.Failure("Для данного заказа спор уже открыт.");
             }
 
             var oldStatus = Status;
-            Dispute = dispute;
+            DisputeId = disputeId;
             Status = OrderStatus.Disputed;
 
-            AddDomainEvent(new OrderDisputedDomainEvent(Id, dispute.Id));
+            AddDomainEvent(new OrderDisputedDomainEvent(Id, disputeId));
             AddDomainEvent(new OrderStatusChangedDomainEvent(Id, oldStatus, Status));
 
             return Result.Success();
         }
 
-        public Result AttachReview(Review review)
+        public Result AttachReview(Guid reviewId)
         {
-            if (review is null)
+            if (reviewId == Guid.Empty)
             {
-                return Result.Failure("Отзыв не может быть null.");
+                return Result.Failure("Идентификатор отзыва не может быть пустым.");
             }
 
             if (Status != OrderStatus.Completed)
             {
                 return Result.Failure("Оставить отзыв можно только к завершенному заказу.");
             }
-
-            if (Review is not null)
+            if (ReviewId != Guid.Empty)
             {
                 return Result.Failure("К этому заказу отзыв уже оставлен.");
             }
 
-            Review = review;
+            ReviewId = reviewId;
 
-            AddDomainEvent(new OrderReviewAttachedDomainEvent(Id, review.Id));
+            AddDomainEvent(new OrderReviewAttachedDomainEvent(Id, reviewId));
 
             return Result.Success();
         }

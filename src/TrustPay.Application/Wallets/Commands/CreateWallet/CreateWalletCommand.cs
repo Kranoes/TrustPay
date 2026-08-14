@@ -18,10 +18,11 @@ namespace TrustPay.Application.Wallets.Commands.CreateWallet
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _userRepository;
 
-        public CreateWalletCommandHandler(IWalletRepository walletRepository, IUnitOfWork unitOfWork)
+        public CreateWalletCommandHandler(IWalletRepository walletRepository, IUnitOfWork unitOfWork, IUserRepository userRepository)
         {
             _walletRepository = walletRepository;
             _unitOfWork = unitOfWork;
+            _userRepository = userRepository;
         }
 
         public async Task<Result<Guid>> Handle(CreateWalletCommand request, CancellationToken cancellationToken)
