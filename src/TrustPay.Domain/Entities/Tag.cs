@@ -7,13 +7,7 @@ using TrustPay.Domain.Events.TagEvents;
 
 public class Tag : AggregateRoot<Guid>
 {
-    private readonly List<Lot> _lots = new();
-    private readonly List<SubCategory> _subCategories = new();
-
     public string Name { get; private set; } = null!;
-
-    public IReadOnlyCollection<Lot> Lots => _lots.AsReadOnly();
-    public IReadOnlyCollection<SubCategory> SubCategories => _subCategories.AsReadOnly();
 
     private Tag() { }
 
