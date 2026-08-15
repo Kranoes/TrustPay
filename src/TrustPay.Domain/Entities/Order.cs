@@ -17,8 +17,7 @@ namespace TrustPay.Domain.Entities
         public DateTime CreatedAt { get; private set; }
         public uint Version { get; private set; }
 
-        public Guid? DisputeId { get; private set; }
-        public Guid? ReviewId { get; private set; }
+        
        
 
         private Order() { }
@@ -126,13 +125,12 @@ namespace TrustPay.Domain.Entities
                 return Result.Failure("Идентификатор спора не может быть пустым.");
             }
 
-            if (DisputeId != Guid.Empty)
+            if (Status == OrderStatus.Disputed)
             {
                 return Result.Failure("Для данного заказа спор уже открыт.");
             }
 
             var oldStatus = Status;
-            DisputeId = disputeId;
             Status = OrderStatus.Disputed;
 
             AddDomainEvent(new OrderDisputedDomainEvent(Id, disputeId));
@@ -141,27 +139,10 @@ namespace TrustPay.Domain.Entities
             return Result.Success();
         }
 
-        public Result AttachReview(Guid reviewId)
-        {
-            if (reviewId == Guid.Empty)
-            {
-                return Result.Failure("Идентификатор отзыва не может быть пустым.");
-            }
+        
+            
 
-            if (Status != OrderStatus.Completed)
-            {
-                return Result.Failure("Оставить отзыв можно только к завершенному заказу.");
-            }
-            if (ReviewId != Guid.Empty)
-            {
-                return Result.Failure("К этому заказу отзыв уже оставлен.");
-            }
 
-            ReviewId = reviewId;
-
-            AddDomainEvent(new OrderReviewAttachedDomainEvent(Id, reviewId));
-
-            return Result.Success();
+            
         }
     }
-}

@@ -42,8 +42,12 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Order?> GetByDisputeIdAsync(Guid disputeId, CancellationToken cancellationToken = default)
     {
-        return await _context.Orders
-            .FirstOrDefaultAsync(o => o.DisputeId == disputeId, cancellationToken);
+        return await (from order in _context.Orders
+                      join dispute in _context.Disputes on order.Id equals dispute.OrderId
+                      where dispute.Id == disputeId
+                      select order)
+                      .AsNoTracking()
+                      .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task AddAsync(Order order, CancellationToken cancellationToken = default)
