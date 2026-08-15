@@ -33,7 +33,7 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users
             .Include(u => u.RefreshTokens)
-            .FirstOrDefaultAsync(u => u.UserEmail == email, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
     }
 
     public async Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
@@ -68,11 +68,11 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> IsEmailUniqueAsync(string email, CancellationToken cancellationToken = default)
     {
-        return !await _context.Users.AnyAsync(u => u.UserEmail == email, cancellationToken);
+        return !await _context.Users.AnyAsync(u => u.Email == email, cancellationToken);
     }
 
     public async Task<bool> IsNickNameUniqueAsync(string nickName, CancellationToken cancellationToken = default)
     {
-        return !await _context.Users.AnyAsync(u => u.UserName == nickName, cancellationToken);
+        return !await _context.Users.AnyAsync(u => u.Name == nickName, cancellationToken);
     }
 }

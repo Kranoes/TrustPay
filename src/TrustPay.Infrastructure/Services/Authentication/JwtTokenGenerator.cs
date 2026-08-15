@@ -27,7 +27,7 @@ namespace TrustPay.Infrastructure.Services.Authentication
             Claim [] claims = 
             {
                 new Claim(JwtRegisteredClaimNames.Sub,user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email,user.UserEmail),
+                new Claim(JwtRegisteredClaimNames.Email,user.Email),
                 new Claim(ClaimTypes.Role,user.Role.ToString())
             };
             var token = new JwtSecurityToken(
