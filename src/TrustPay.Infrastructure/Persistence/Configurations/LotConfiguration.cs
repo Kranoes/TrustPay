@@ -12,13 +12,16 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
     {
     public void Configure(EntityTypeBuilder<Lot> builder)
         {
-            
+            builder.ToTable("lots");
+            builder.HasKey(l=>l.Id);
+
             builder.Property(p => p.Title)
                 .IsRequired()
                 .HasMaxLength(100);
 
             builder.Property(p => p.ItemsCount)
                 .IsRequired();
+            builder.Ignore(l => l.TagIds);
 
             builder.HasOne<User>()
                 .WithMany()
@@ -33,22 +36,6 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
                 .HasMaxLength(3)
                 .IsRequired();
             });
-
-
-            builder.HasMany<Tag>()
-                .WithMany(m => m.Lots)
-                .UsingEntity<Dictionary<string, object>>(
-                "LotTag",
-                j => j.HasOne<Tag>()
-                .WithMany()
-                .HasForeignKey("TagId")
-                .OnDelete(DeleteBehavior.Restrict),
-                j => j.HasOne<Lot>()
-                .WithMany()
-                .HasForeignKey("LotId")
-                .OnDelete(DeleteBehavior.Cascade)
-                );
-
             builder.HasOne<SubCategory>()
                 .WithMany()
                 .HasForeignKey(l => l.SubCategoryId)
