@@ -21,7 +21,6 @@ public class SubCategoryRepository : ISubCategoryRepository
     public async Task<SubCategory?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.SubCategories
-            .Include(sc => sc.Tags)
             .FirstOrDefaultAsync(sc => sc.Id == id, cancellationToken);
     }
 
@@ -33,6 +32,11 @@ public class SubCategoryRepository : ISubCategoryRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<bool> HasByCategoryIdAsync(Guid categoryId, CancellationToken cancellationToken = default)
+    {
+        return await _context.SubCategories
+            .AnyAsync(sc => sc.CategoryId == categoryId, cancellationToken);
+    }
     public async Task AddAsync(SubCategory subCategory, CancellationToken cancellationToken = default)
     {
         await _context.SubCategories.AddAsync(subCategory, cancellationToken);

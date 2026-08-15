@@ -11,11 +11,12 @@ public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryComman
 {
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
-
-    public DeleteCategoryCommandHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
+    private readonly ISubCategoryRepository _subCategoryRepository;
+    public DeleteCategoryCommandHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork, ISubCategoryRepository subCategoryRepository)
     {
         _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
+        _subCategoryRepository = subCategoryRepository;
     }
 
     public async Task<Result> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
@@ -26,10 +27,10 @@ public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryComman
             return Result.Failure("Категория не найдена.");
         }
 
-        var canDeleteResult = category.EnsureCanBeDeleted();
-        if (canDeleteResult.IsFailure)
+        var canDeleteResult = await _subCategoryRepository.HasByCategoryIdAsync(request.Id, cancellationToken);
+        if (canDeleteResult)
         {
-            return Result.Failure(canDeleteResult.Error);
+            return Result.Failure("Невозможно удалить категорию, так как она имеет связанные подкатегории.");
         }
 
         _categoryRepository.Delete(category);

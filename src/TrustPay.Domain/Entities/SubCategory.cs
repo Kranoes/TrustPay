@@ -8,15 +8,12 @@ namespace TrustPay.Domain.Entities
 {
     public class SubCategory : AggregateRoot<Guid>
     {
-        private readonly List<Tag> _tags = new();
-
         public Guid CategoryId { get; private set; }
         public string Title { get; private set; } = null!;
         public int LotsCount { get; private set; }
+        private readonly HashSet<Guid> _tagsIds = new();
+        public IReadOnlyCollection<Guid> TagsIds => _tagsIds;
 
-        public IReadOnlyCollection<Tag> Tags => _tags.AsReadOnly();
-
-        public Category Category { get; private set; } = null!;
 
         private SubCategory() { }
 
@@ -67,43 +64,44 @@ namespace TrustPay.Domain.Entities
             return Result.Success();
         }
 
-        public Result AddTag(Tag tag)
+        public Result AddTag(Guid tagId)
         {
-            if (tag is null)
+            if (tagId == Guid.Empty)
             {
-                return Result.Failure("Тег не может быть null.");
+                return Result.Failure("Тег не может быть пустым.");
             }
 
-            if (_tags.Any(t => t.Id == tag.Id))
+            if (_tagsIds.Add(tagId))
             {
-                return Result.Failure("Данный тег уже добавлен к подкатегории.");
+                AddDomainEvent(new SubCategoryTagAddedDomainEvent(Id, tagId));
+                return Result.Success();
+
+
             }
-
-            _tags.Add(tag);
-
-            AddDomainEvent(new SubCategoryTagAddedDomainEvent(Id, tag.Id));
-
-            return Result.Success();
+            return Result.Failure("Данный тег уже добавлен к подкатегории.");
         }
 
         public Result RemoveTag(Guid tagId)
         {
-            var tagToRemove = _tags.FirstOrDefault(t => t.Id == tagId);
-            if (tagToRemove is null)
+            if(tagId == Guid.Empty)
             {
-                return Result.Failure("Тег не найден в подкатегории.");
+                return Result.Failure("Идентификатор тега не может быть пустым.");
             }
+            if(_tagsIds.Remove(tagId))
+            {
+                AddDomainEvent(new SubCategoryTagRemovedDomainEvent(Id, tagId));
+                return Result.Success();
 
-            _tags.Remove(tagToRemove);
 
-            AddDomainEvent(new SubCategoryTagRemovedDomainEvent(Id, tagId));
+            }
+            return Result.Failure("Тег не найден в подкатегории.");
 
-            return Result.Success();
         }
 
         public void IncrementLotsCount()
         {
             LotsCount++;
+
         }
 
         public void DecrementLotsCount()

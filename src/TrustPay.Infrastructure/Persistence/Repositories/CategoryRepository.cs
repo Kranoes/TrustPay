@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Entities;
-
+using TrustPay.Domain.Enums;
 namespace TrustPay.Infrastructure.Persistence.Repositories
 {
     public class CategoryRepository : ICategoryRepository
@@ -30,7 +30,7 @@ namespace TrustPay.Infrastructure.Persistence.Repositories
         {
             return await _context.Categories
                  .Where(c => c.Title == title)
-                 .Select(c => c.Id)
+                 .Select(c => (Guid?)c.Id)
                  .FirstOrDefaultAsync(cancellationToken);
         }
         public async Task AddAsync(Category category, CancellationToken cancellationToken = default)
@@ -38,9 +38,22 @@ namespace TrustPay.Infrastructure.Persistence.Repositories
             await _context.Categories.AddAsync(category, cancellationToken);
 
         }
-        public async Task<List<Category>> FindBySubCategory(Guid subCategoryId, CancellationToken cancellationToken = default)
+        public async Task<List<Category>> SearchAsync(string? title, string? description, CategoryType? type, CancellationToken cancellationToken = default)
         {
-            return await _context.Categories.AsNoTracking().Where(c=>c.SubCategories.Any(sc=>sc.Id==subCategoryId)).ToListAsync(cancellationToken);
+            var query = _context.Categories.AsQueryable().AsNoTracking();
+            if (title is not null&&string.IsNullOrWhiteSpace(title))
+            {
+                query = query.Where(c=>EF.Functions.ILike(c.Title, $"%{title}%"));
+            }
+            if (description is not null&&string.IsNullOrWhiteSpace(description))
+            {
+                query = query.Where(c=>EF.Functions.ILike(c.Description, $"%{description}%"));
+            }
+            if (type is not null)
+            {
+                query = query.Where(c=>c.Type == type);
+            }
+            return await query.ToListAsync(cancellationToken);
         }
         public async Task<List<Category>> FindByDescriptionKeywordsAsync(string[] keywords, CancellationToken cancellationToken = default)
         {

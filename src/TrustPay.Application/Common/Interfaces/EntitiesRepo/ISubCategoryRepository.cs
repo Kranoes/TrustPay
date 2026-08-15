@@ -11,6 +11,7 @@ public interface ISubCategoryRepository
     Task<SubCategory?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<List<SubCategory>> GetByCategoryIdAsync(Guid categoryId, CancellationToken cancellationToken = default);
     Task AddAsync(SubCategory subCategory, CancellationToken cancellationToken = default);
+    Task<bool> HasByCategoryIdAsync(Guid categoryId, CancellationToken cancellationToken = default);
     void Update(SubCategory subCategory);
     void Delete(SubCategory subCategory);
 }
