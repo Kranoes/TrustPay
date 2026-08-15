@@ -37,8 +37,8 @@ namespace TrustPay.Application.Common.Authentication.Queries.Login
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             var response = new AuthenticationResponse(
                 Id: user.Id,
-                NickName: user.UserName,
-                Email: user.UserEmail,
+                NickName: user.Name,
+                Email: user.Email,
                 Token: token,
                 RefreshToken: refreshToken
                 );

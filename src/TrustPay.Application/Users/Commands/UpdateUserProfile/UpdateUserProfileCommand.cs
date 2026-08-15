@@ -29,7 +29,7 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
             return Error.NotFound("User.NotFound", $"Пользователь с ID '{request.UserId}' не найден.");
         }
 
-        if (!string.Equals(user.UserEmail, request.Email, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase))
         {
             bool isEmailUnique = await _userRepository.IsEmailUniqueAsync(request.Email, cancellationToken);
             if (!isEmailUnique)
@@ -38,7 +38,7 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
             }
         }
 
-        if (!string.Equals(user.UserName, request.NickName, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(user.Name, request.NickName, StringComparison.OrdinalIgnoreCase))
         {
             bool isNickUnique = await _userRepository.IsNickNameUniqueAsync(request.NickName, cancellationToken);
             if (!isNickUnique)

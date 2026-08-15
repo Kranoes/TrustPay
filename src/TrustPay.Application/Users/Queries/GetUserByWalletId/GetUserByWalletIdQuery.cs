@@ -28,8 +28,8 @@ public class GetUserByWalletIdQueryHandler : IRequestHandler<GetUserByWalletIdQu
 
         var response = new UserResponse(
             user.Id,
-            user.UserEmail,
-            user.UserName,
+            user.Email,
+            user.Name,
             user.Role);
 
         return Result.Success(response);

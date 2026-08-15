@@ -8,10 +8,9 @@ namespace TrustPay.Domain.Entities
 {
     public class User : AggregateRoot<Guid>
     {
-        private readonly List<Lot> _lots = new();
 
-        public string UserName { get; private set; } = null!;
-        public string UserEmail { get; private set; } = null!;
+        public string Name { get; private set; } = null!;
+        public string Email { get; private set; } = null!;
         public double AvgRating { get; private set; }
         public string PasswordHash { get; private set; } = null!;
         public int CountOfValuations { get; private set; }
@@ -27,8 +26,8 @@ namespace TrustPay.Domain.Entities
         private User(Guid id, string email, string nickName, string passwordHash ,UserRole role)
             : base(id)
         {
-            UserEmail = email;
-            UserName = nickName;
+            Email = email;
+            Name = nickName;
             PasswordHash = passwordHash;
             Role = role;
             AvgRating = 0;
@@ -60,8 +59,8 @@ namespace TrustPay.Domain.Entities
 
             user.AddDomainEvent(new UserCreatedDomainEvent(
                 user.Id,
-                user.UserEmail,
-                user.UserName,
+                user.Email,
+                user.Name,
                 user.Role));
 
             return Result.Success(user);
