@@ -10,11 +10,11 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
         {
             builder.HasKey(u => u.Id);
 
-            builder.Property(u => u.UserName)
+            builder.Property(u => u.Name)
                 .HasColumnType("citext")
                 .IsRequired();
 
-            builder.Property(u => u.UserEmail)
+            builder.Property(u => u.Email)
                 .HasColumnType("citext")
                 .IsRequired();
 
@@ -29,10 +29,10 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
                 .HasMaxLength(20)
                 .IsRequired();
 
-            builder.HasIndex(u => u.UserEmail)
+            builder.HasIndex(u => u.Email)
                 .IsUnique();
 
-            builder.HasIndex(u => u.UserName)
+            builder.HasIndex(u => u.Name)
                 .IsUnique();
         }
     }

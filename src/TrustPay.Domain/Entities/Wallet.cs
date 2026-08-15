@@ -23,7 +23,7 @@ namespace TrustPay.Domain.Entities
             UserId = userId;
             Status = WalletStatus.Active;
             AvailableBalance = initialBalance;
-            LockedBalance = Money.Create(0, initialBalance.Currency).Value;
+            LockedBalance = Money.Zero(initialBalance.Currency);
         }
 
         public static Result<Wallet> Create(Guid userId, Money initialBalance)

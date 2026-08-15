@@ -30,19 +30,6 @@ namespace TrustPay.Infrastructure
         {
             base.OnModelCreating(builder);
             builder.HasPostgresExtension("citext");
-            builder.Entity<Wallet>(builder =>
-            {
-                builder.ComplexProperty(w => w.AvailableBalance);
-                builder.ComplexProperty(w => w.LockedBalance);
-            });
-            builder.Entity<Order>(mbuilder =>
-            {
-                mbuilder.ComplexProperty(o => o.Price);
-            });
-            builder.Entity<Lot>(mbuilder =>
-            {
-                mbuilder.ComplexProperty(l => l.Cost);
-            });
             builder.ApplyConfigurationsFromAssembly(typeof(TrustPayDbContext).Assembly);
         }
 

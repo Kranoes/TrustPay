@@ -21,22 +21,8 @@ namespace TrustPay.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("LotTag", b =>
-                {
-                    b.Property<Guid>("LotId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TagId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("LotId", "TagId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("LotTag");
-                });
 
             modelBuilder.Entity("SubCategoryTag", b =>
                 {
@@ -69,8 +55,9 @@ namespace TrustPay.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -85,8 +72,8 @@ namespace TrustPay.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("ArbitrationId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("ArbitratorId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -102,18 +89,29 @@ namespace TrustPay.Infrastructure.Migrations
 
                     b.Property<string>("Reason")
                         .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("ExecutorId");
 
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.ToTable("Disputes");
+                    b.HasIndex("Status");
+
+                    b.ToTable("Disputes", (string)null);
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Lot", b =>
@@ -141,11 +139,13 @@ namespace TrustPay.Infrastructure.Migrations
                             b1.IsRequired();
 
                             b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric");
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)");
                         });
 
                     b.HasKey("Id");
@@ -154,7 +154,22 @@ namespace TrustPay.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Lots");
+                    b.ToTable("lots", (string)null);
+                });
+
+            modelBuilder.Entity("TrustPay.Domain.Entities.LotTag", b =>
+                {
+                    b.Property<Guid>("LotId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("LotId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("lot_tags", (string)null);
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Order", b =>
@@ -192,11 +207,13 @@ namespace TrustPay.Infrastructure.Migrations
                             b1.IsRequired();
 
                             b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric");
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)");
                         });
 
                     b.HasKey("Id");
@@ -207,7 +224,33 @@ namespace TrustPay.Infrastructure.Migrations
 
                     b.HasIndex("LotId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("orders", (string)null);
+                });
+
+            modelBuilder.Entity("TrustPay.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpireAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshToken");
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Review", b =>
@@ -215,6 +258,9 @@ namespace TrustPay.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -224,11 +270,8 @@ namespace TrustPay.Infrastructure.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("RatePoint")
+                    b.Property<int>("Rating")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("ReviewTime")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -278,18 +321,11 @@ namespace TrustPay.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("NormalizedName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("citext");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name");
-
-                    b.HasIndex("NormalizedName")
+                    b.HasIndex("Name")
                         .IsUnique();
 
                     b.ToTable("Tags");
@@ -301,21 +337,22 @@ namespace TrustPay.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
                     b.Property<string>("ErrorMessage")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ExternalPaymentId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PaymentSource")
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("ReceiverWalletId")
                         .HasColumnType("uuid");
@@ -337,7 +374,7 @@ namespace TrustPay.Infrastructure.Migrations
 
                     b.HasIndex("SenderWalletId");
 
-                    b.ToTable("Transactions", (string)null);
+                    b.ToTable("transactions", (string)null);
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.User", b =>
@@ -346,7 +383,7 @@ namespace TrustPay.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<double>("AvgRaing")
+                    b.Property<double>("AvgRating")
                         .HasColumnType("double precision");
 
                     b.Property<int>("CountOfValuations")
@@ -355,20 +392,30 @@ namespace TrustPay.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserEmail")
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("citext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("citext");
+
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UserName")
+                    b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("WalletId")
-                        .HasColumnType("uuid");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserName");
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -396,11 +443,13 @@ namespace TrustPay.Infrastructure.Migrations
                             b1.IsRequired();
 
                             b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric");
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)");
                         });
 
                     b.ComplexProperty(typeof(Dictionary<string, object>), "LockedBalance", "TrustPay.Domain.Entities.Wallet.LockedBalance#Money", b1 =>
@@ -408,11 +457,13 @@ namespace TrustPay.Infrastructure.Migrations
                             b1.IsRequired();
 
                             b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric");
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)");
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)");
                         });
 
                     b.HasKey("Id");
@@ -420,22 +471,7 @@ namespace TrustPay.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Wallets");
-                });
-
-            modelBuilder.Entity("LotTag", b =>
-                {
-                    b.HasOne("TrustPay.Domain.Entities.Lot", null)
-                        .WithMany()
-                        .HasForeignKey("LotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TrustPay.Domain.Entities.Tag", null)
-                        .WithMany()
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.ToTable("wallets", (string)null);
                 });
 
             modelBuilder.Entity("SubCategoryTag", b =>
@@ -455,81 +491,89 @@ namespace TrustPay.Infrastructure.Migrations
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Dispute", b =>
                 {
-                    b.HasOne("TrustPay.Domain.Entities.Order", "Order")
-                        .WithOne("Dispute")
+                    b.HasOne("TrustPay.Domain.Entities.Order", null)
+                        .WithOne()
                         .HasForeignKey("TrustPay.Domain.Entities.Dispute", "OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Lot", b =>
                 {
-                    b.HasOne("TrustPay.Domain.Entities.SubCategory", "SubCategory")
+                    b.HasOne("TrustPay.Domain.Entities.SubCategory", null)
                         .WithMany()
                         .HasForeignKey("SubCategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TrustPay.Domain.Entities.User", "User")
-                        .WithMany("Lots")
+                    b.HasOne("TrustPay.Domain.Entities.User", null)
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
 
-                    b.Navigation("SubCategory");
+            modelBuilder.Entity("TrustPay.Domain.Entities.LotTag", b =>
+                {
+                    b.HasOne("TrustPay.Domain.Entities.Lot", null)
+                        .WithMany()
+                        .HasForeignKey("LotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("User");
+                    b.HasOne("TrustPay.Domain.Entities.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("TrustPay.Domain.Entities.User", "Customer")
+                    b.HasOne("TrustPay.Domain.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TrustPay.Domain.Entities.User", "Executor")
+                    b.HasOne("TrustPay.Domain.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("ExecutorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TrustPay.Domain.Entities.Lot", "Lot")
+                    b.HasOne("TrustPay.Domain.Entities.Lot", null)
                         .WithMany()
                         .HasForeignKey("LotId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
 
-                    b.Navigation("Customer");
-
-                    b.Navigation("Executor");
-
-                    b.Navigation("Lot");
+            modelBuilder.Entity("TrustPay.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("TrustPay.Domain.Entities.User", null)
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Review", b =>
                 {
-                    b.HasOne("TrustPay.Domain.Entities.Order", "Order")
-                        .WithOne("Review")
+                    b.HasOne("TrustPay.Domain.Entities.Order", null)
+                        .WithOne()
                         .HasForeignKey("TrustPay.Domain.Entities.Review", "OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.SubCategory", b =>
                 {
-                    b.HasOne("TrustPay.Domain.Entities.Category", "Category")
-                        .WithMany("SubCategories")
+                    b.HasOne("TrustPay.Domain.Entities.Category", null)
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Transaction", b =>
@@ -543,37 +587,47 @@ namespace TrustPay.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("SenderWalletId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.OwnsOne("TrustPay.Domain.ValueObjects.Money", "Amount", b1 =>
+                        {
+                            b1.Property<Guid>("TransactionId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("Currency");
+
+                            b1.HasKey("TransactionId");
+
+                            b1.ToTable("transactions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TransactionId");
+                        });
+
+                    b.Navigation("Amount")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Wallet", b =>
                 {
-                    b.HasOne("TrustPay.Domain.Entities.User", "User")
-                        .WithOne("Wallet")
+                    b.HasOne("TrustPay.Domain.Entities.User", null)
+                        .WithOne()
                         .HasForeignKey("TrustPay.Domain.Entities.Wallet", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TrustPay.Domain.Entities.Category", b =>
-                {
-                    b.Navigation("SubCategories");
-                });
-
-            modelBuilder.Entity("TrustPay.Domain.Entities.Order", b =>
-                {
-                    b.Navigation("Dispute")
-                        .IsRequired();
-
-                    b.Navigation("Review");
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.User", b =>
                 {
-                    b.Navigation("Lots");
-
-                    b.Navigation("Wallet");
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

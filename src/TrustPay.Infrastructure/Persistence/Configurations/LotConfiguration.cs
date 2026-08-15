@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrustPay.Domain.Entities;
+
 namespace TrustPay.Infrastructure.Persistence.Configurations
 {
-    public class LotConfiguration : IEntityTypeConfiguration<Lot> 
-
+    public class LotConfiguration : IEntityTypeConfiguration<Lot>
     {
-    public void Configure(EntityTypeBuilder<Lot> builder)
+        public void Configure(EntityTypeBuilder<Lot> builder)
         {
             builder.ToTable("lots");
-            builder.HasKey(l=>l.Id);
+            builder.HasKey(l => l.Id);
 
             builder.Property(p => p.Title)
                 .IsRequired()
@@ -21,26 +17,29 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
 
             builder.Property(p => p.ItemsCount)
                 .IsRequired();
+
             builder.Ignore(l => l.TagIds);
 
             builder.HasOne<User>()
                 .WithMany()
-                .HasForeignKey(l=>l.UserId)
+                .HasForeignKey(l => l.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.OwnsOne(l => l.Cost, costBuilder =>
+
+            builder.ComplexProperty(l => l.Cost, costBuilder =>
             {
                 costBuilder.Property(m => m.Amount)
-                .HasPrecision(18, 2)
-                .IsRequired();
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+
                 costBuilder.Property(m => m.Currency)
-                .HasMaxLength(3)
-                .IsRequired();
+                    .HasMaxLength(3)
+                    .IsRequired();
             });
+
             builder.HasOne<SubCategory>()
                 .WithMany()
                 .HasForeignKey(l => l.SubCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
         }
     }
 }

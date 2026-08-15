@@ -6,7 +6,11 @@ using TrustPay.Domain.ValueObjects;
 
 namespace TrustPay.Domain.Events.TransactionsEvents
 {
-    public record TransactionCompletedDomainEvent (Guid TransactionId) :IDomainEvent
+    public record TransactionCompletedDomainEvent (
+        Guid TransactionId,
+        Guid? WalletId,
+        Money Amount,
+        string? PaymentSource) :IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
         public DateTime OccurredOnUtc { get; } = DateTime.UtcNow;

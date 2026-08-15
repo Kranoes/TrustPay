@@ -97,7 +97,21 @@ namespace TrustPay.Domain.Entities
             return Result.Failure("Тег не найден в подкатегории.");
 
         }
-
+        public void LoatTags(IEnumerable<Guid> tagIds)
+        {
+            _tagsIds.Clear();
+            if (tagIds is null)
+            {
+                return;
+            }
+            foreach (var tagId in tagIds)
+            {
+                if (tagId != Guid.Empty)
+                {
+                    _tagsIds.Add(tagId);
+                }
+            }
+        }
         public void IncrementLotsCount()
         {
             LotsCount++;

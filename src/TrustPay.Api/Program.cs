@@ -24,6 +24,7 @@ builder.Services.AddOpenApi(options =>
         Description = "Введите JWT токен"
     };
     document.Components ??= new OpenApiComponents();
+    document.Components.SecuritySchemes ??= new Dictionary<string,IOpenApiSecurityScheme>();
     document.Components.SecuritySchemes["Bearer"] = securityScheme;
     var securityRequirement = new OpenApiSecurityRequirement
     {

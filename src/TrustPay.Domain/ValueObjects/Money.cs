@@ -57,5 +57,10 @@ namespace TrustPay.Domain.ValueObjects
             yield return Amount;
             yield return Currency;
         }
+        public static Money Zero(string currency)
+        {
+            return new Money(0, currency);
+        }
     }
-}
+    
+    }

@@ -14,8 +14,10 @@ namespace TrustPay.Domain.Entities
         public TransactionType Type { get; private set; }
         public TransactionStatus Status { get; private set; }
         public DateTime CreatedAt { get; private set; }
+        public string? PaymentSource { get; private set; }
         public DateTime? CompletedAt { get; private set; }
         public string? ErrorMessage { get; private set; }
+        public string? ExternalPaymentId { get; private set; }
 
         private Transaction() { }
 
@@ -75,8 +77,60 @@ namespace TrustPay.Domain.Entities
 
             return Result.Success(transaction);
         }
+        public static Result<Transaction> CreateDeposit(Guid receiverWalletId,Money amount)
+        {
+            if (receiverWalletId == Guid.Empty)
+            {
+                return Result<Transaction>.Failure("Некорректный ID кошелька.");
+            }
+            if (amount is null || amount.Amount <= 0)
+            {
+                return Result<Transaction>.Failure("Некорректная сумма депозита.");
+            }
+            
+            var transaction = new Transaction(
+            
+                 Guid.NewGuid(),
+                 null,
+                 receiverWalletId,
+                 amount,
+                 TransactionType.Deposit
+            );
+            transaction.AddDomainEvent(new TransactionCreatedDomainEvent(
+                transaction.Id,
+                null,
+                transaction.ReceiverWalletId,
+                transaction.Amount
+                ));
+            return Result.Success(transaction);
 
-        public Result Complete()
+        }
+        public static Result<Transaction> CreateWithdrawal(Guid senderWalletId,Money amount)
+        {
+            if (senderWalletId == Guid.Empty)
+            {
+                return Result.Failure<Transaction>("Некорректный ID.");
+            }
+            if (amount is null || amount.Amount <= 0)
+            {
+                return Result.Failure<Transaction>("Некорректная сумма вывода.");
+            }
+            var transaction = new Transaction(
+                Guid.NewGuid(),
+                senderWalletId,
+                null,
+                amount,
+                TransactionType.Withdrawal
+                );
+            transaction.AddDomainEvent(new TransactionCreatedDomainEvent(
+                 transaction.Id,
+                 transaction.SenderWalletId,
+                 null,
+                 transaction.Amount
+                ));
+            return Result.Success(transaction);
+        }
+        public Result Complete(string? paymentSource,Guid? walletId,Money amount)
         {
             if (Status != TransactionStatus.Pending)
             {
@@ -85,8 +139,8 @@ namespace TrustPay.Domain.Entities
 
             Status = TransactionStatus.Completed;
             CompletedAt = DateTime.UtcNow;
-
-            AddDomainEvent(new TransactionCompletedDomainEvent(Id));
+            PaymentSource = paymentSource;
+            AddDomainEvent(new TransactionCompletedDomainEvent(Id,walletId,amount,paymentSource));
             return Result.Success();
         }
 
@@ -108,5 +162,15 @@ namespace TrustPay.Domain.Entities
             AddDomainEvent(new TransactionFailedDomainEvent(Id, errorMessage));
             return Result.Success();
         }
+        public Result SetExternalPaymentId(string externalPaymentId)
+        {
+            if (string.IsNullOrWhiteSpace(externalPaymentId))
+            {
+                return Result.Failure("Внешний ID платежа не может быть пустым.");
+            }
+            ExternalPaymentId = externalPaymentId;
+            return Result.Success();
+        }
+
     }
 }

@@ -56,8 +56,8 @@ namespace TrustPay.Application.Common.Authentication.Commands.Register
             
             var response = new AuthenticationResponse(
                 user.Id,
-                user.UserName,
-                user.UserEmail,
+                user.Name,
+                user.Email,
                 token,
                 refreshToken
             );
