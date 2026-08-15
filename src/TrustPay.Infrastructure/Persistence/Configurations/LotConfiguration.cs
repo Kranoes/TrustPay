@@ -35,7 +35,7 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
             });
 
 
-            builder.HasMany(m => m.Tags)
+            builder.HasMany<Tag>()
                 .WithMany(m => m.Lots)
                 .UsingEntity<Dictionary<string, object>>(
                 "LotTag",

@@ -17,7 +17,7 @@ namespace TrustPay.Infrastructure
 
         public DbSet<SubCategory> SubCategories=> Set<SubCategory>();
         public DbSet<Tag> Tags=> Set<Tag>();
-
+        public DbSet<LotTag> LotTags => Set<LotTag>();
         public DbSet<User> Users=> Set<User>();
         public DbSet<Wallet> Wallets => Set<Wallet>();
         public DbSet<Review> Reviews => Set<Review>();
