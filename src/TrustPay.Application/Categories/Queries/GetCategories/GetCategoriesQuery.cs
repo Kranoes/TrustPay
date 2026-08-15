@@ -14,11 +14,14 @@ public record GetCategoriesQuery(
 
 public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Result<List<CategoryResponse>>>
 {
+    private readonly ISubCategoryRepository _subCategoryRepository;
+
     private readonly ICategoryRepository _categoryRepository;
 
-    public GetCategoriesQueryHandler(ICategoryRepository categoryRepository)
+    public GetCategoriesQueryHandler(ICategoryRepository categoryRepository, ISubCategoryRepository subCategoryRepository)
     {
         _categoryRepository = categoryRepository;
+        _subCategoryRepository = subCategoryRepository;
     }
 
     public async Task<Result<List<CategoryResponse>>> Handle(GetCategoriesQuery request, CancellationToken cancellationToken)
@@ -27,7 +30,7 @@ public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Res
 
         if (request.SubCategoryId.HasValue)
         {
-            categories = await _categoryRepository.FindBySubCategory(request.SubCategoryId.Value, cancellationToken);
+            categories = await _categoryRepository.GetAllAsync( cancellationToken);
         }
         else if (request.Keywords != null && request.Keywords.Length > 0)
         {

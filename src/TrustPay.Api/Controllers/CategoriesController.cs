@@ -6,8 +6,10 @@ using TrustPay.Application.Categories.Commands.CreateCategory;
 using TrustPay.Application.Categories.Commands.DeleteCategory;
 using TrustPay.Application.Categories.Commands.UpdateCategory;
 using TrustPay.Application.Categories.DTOs;
+using TrustPay.Application.Categories.Queries.GetAllCategories;
 using TrustPay.Application.Categories.Queries.GetCategories;
 using TrustPay.Application.Categories.Queries.GetCategoryById;
+using TrustPay.Application.Categories.Queries.SearchCategories;
 using TrustPay.Domain.Enums;
 
 /// <summary>
@@ -16,27 +18,7 @@ using TrustPay.Domain.Enums;
 [Route("api/categories")]
 public class CategoriesController : ApiController
 {
-    /// <summary>
-    /// Получить список категорий (всех или с фильтрацией)
-    /// </summary>
-    /// <remarks>
-    /// Примеры:
-    /// - GET /api/categories (все)
-    /// - GET /api/categories?subCategoryId=guid
-    /// - GET /api/categories?keywords=food&amp;keywords=shop
-    /// </remarks>
-    [HttpGet]
-    [ProducesResponseType(typeof(List<CategoryResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll(
-        [FromQuery] string[]? keywords,
-        [FromQuery] Guid? subCategoryId,
-        CancellationToken cancellationToken)
-    {
-        var query = new GetCategoriesQuery(keywords, subCategoryId);
-        var result = await Mediator.Send(query, cancellationToken);
-
-        return HandleResult(result);
-    }
+    
 
     /// <summary>
     /// Получить категорию по идентификатору
@@ -98,8 +80,26 @@ public class CategoriesController : ApiController
 
         return HandleResult(result);
     }
+    [HttpGet("all")]
+    [ProducesResponseType(typeof(List<CategoryResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        var query = new GetAllCategoriesQuery();
+        var result = await Mediator.Send(query, cancellationToken);
+
+        return HandleResult(result);
+    }
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(List<CategoryResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Search([FromQuery] SearchCategoriesQuery request, CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(request, cancellationToken);
+        return HandleResult(result);
+    }
 }
 
-// Request DTOs
 public record CreateCategoryRequest(string Title, string Description, CategoryType Type);
 public record UpdateCategoryRequest(string Title, string Description, CategoryType Type);

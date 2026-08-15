@@ -18,6 +18,7 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
                 .HasMaxLength(150);
             builder.HasIndex(i => i.Type);
             builder.Property(p => p.Type)
+                .HasConversion<string>()
                 .IsRequired();
             
         }

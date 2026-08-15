@@ -15,8 +15,8 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
                 .HasMaxLength(100)
                 .IsRequired();
             builder.HasIndex(s=>s.Title);
-            builder.HasMany(s => s.Tags)
-                .WithMany(t => t.SubCategories)
+            builder.HasMany<Tag>()
+                .WithMany()
                 .UsingEntity<Dictionary<string, object>>("SubCategoryTag",
                 j => j.HasOne<Tag>()
                 .WithMany()
@@ -27,8 +27,8 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasForeignKey("SubCategoryId")
                 );
-            builder.HasOne(s => s.Category)
-                .WithMany(c => c.SubCategories)
+            builder.HasOne<Category>()
+                .WithMany()
                 .HasForeignKey(s=>s.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
         }

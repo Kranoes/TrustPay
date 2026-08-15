@@ -9,13 +9,10 @@ namespace TrustPay.Domain.Entities
 {
     public class Category : AggregateRoot<Guid>
     {
-        private readonly List<SubCategory> _subCategories = new();
-
         public string Title { get; private set; } = null!;
         public string Description { get; private set; } = null!;
         public CategoryType Type { get; private set; }
 
-        public IReadOnlyCollection<SubCategory> SubCategories => _subCategories.AsReadOnly();
 
         private Category() { }
 
@@ -66,45 +63,6 @@ namespace TrustPay.Domain.Entities
         }
 
        
-        public Result AddSubCategory(SubCategory subCategory)
-        {
-            if (subCategory == null)
-            {
-                return Result.Failure("Подкатегория не может быть пустой.");
-            }
-
-            if (_subCategories.Any(sc => sc.Id == subCategory.Id))
-            {
-                return Result.Failure("Эта подкатегория уже привязана к данной категории.");
-            }
-
-            _subCategories.Add(subCategory);
-
-            return Result.Success();
-        }
-
-       
-        public Result RemoveSubCategory(Guid subCategoryId)
-        {
-            var subCategory = _subCategories.FirstOrDefault(sc => sc.Id == subCategoryId);
-            if (subCategory == null)
-            {
-                return Result.Failure("Подкатегория не привязана к данной категории.");
-            }
-
-            _subCategories.Remove(subCategory);
-
-            return Result.Success();
-        }
-
-        public Result EnsureCanBeDeleted()
-        {
-            if (_subCategories.Any())
-            {
-                return Result.Failure("Нельзя удалить категорию, пока к ней привязаны подкатегории. Сначала отвяжите их.");
-            }
-
-            return Result.Success();
-        }
+        
     }
 }
