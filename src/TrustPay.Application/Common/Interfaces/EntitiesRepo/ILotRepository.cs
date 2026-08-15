@@ -12,6 +12,6 @@ public interface ILotRepository
     Task<List<Lot>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<List<Lot>> GetBySubCategoryIdAsync(Guid subCategoryId, CancellationToken cancellationToken = default);
     Task AddAsync(Lot lot, CancellationToken cancellationToken = default);
-    void Update(Lot lot);
+    Task UpdateAsync(Lot lot, CancellationToken cancellationToken = default);
     void Delete(Lot lot);
 }

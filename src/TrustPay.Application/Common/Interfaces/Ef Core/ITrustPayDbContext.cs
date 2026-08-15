@@ -15,7 +15,6 @@ public interface ITrustPayDbContext
      DbSet<Wallet> Wallets { get; }
      DbSet<Review> Reviews { get; }
      DbSet<Transaction> Transactions { get; }
-
-
+     DbSet<LotTag> LotTags { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
