@@ -4,7 +4,10 @@ using System.Text;
 
 namespace TrustPay.Application.SubCategories.DTOs
 {
-    internal class SubCategoryResponse
-    {
-    }
+    public record SubCategoryResponse(
+    Guid Id,
+    Guid CategoryId,
+    string Title,
+    int LotsCount,
+    IReadOnlyCollection<Guid> TagsIds);
 }

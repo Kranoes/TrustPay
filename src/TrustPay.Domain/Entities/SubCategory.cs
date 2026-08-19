@@ -97,7 +97,7 @@ namespace TrustPay.Domain.Entities
             return Result.Failure("Тег не найден в подкатегории.");
 
         }
-        public void LoatTags(IEnumerable<Guid> tagIds)
+        public void LoadTags(IEnumerable<Guid> tagIds)
         {
             _tagsIds.Clear();
             if (tagIds is null)
@@ -124,6 +124,15 @@ namespace TrustPay.Domain.Entities
             {
                 LotsCount--;
             }
+        }
+        public Result CanDelete()
+        {
+            if (LotsCount > 0)
+            {
+                return Result.Failure("Нельзя удалить подкатегорию, содержащую активные лоты.");
+
+            }
+            return Result.Success();
         }
     }
 }
