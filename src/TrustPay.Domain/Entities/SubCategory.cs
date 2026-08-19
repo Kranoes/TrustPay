@@ -97,7 +97,21 @@ namespace TrustPay.Domain.Entities
             return Result.Failure("Тег не найден в подкатегории.");
 
         }
-
+        public void LoadTags(IEnumerable<Guid> tagIds)
+        {
+            _tagsIds.Clear();
+            if (tagIds is null)
+            {
+                return;
+            }
+            foreach (var tagId in tagIds)
+            {
+                if (tagId != Guid.Empty)
+                {
+                    _tagsIds.Add(tagId);
+                }
+            }
+        }
         public void IncrementLotsCount()
         {
             LotsCount++;
@@ -110,6 +124,15 @@ namespace TrustPay.Domain.Entities
             {
                 LotsCount--;
             }
+        }
+        public Result CanDelete()
+        {
+            if (LotsCount > 0)
+            {
+                return Result.Failure("Нельзя удалить подкатегорию, содержащую активные лоты.");
+
+            }
+            return Result.Success();
         }
     }
 }

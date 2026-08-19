@@ -8,7 +8,7 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Transaction> builder)
         {
-            builder.ToTable("Transactions");
+            builder.ToTable("transactions");
 
             builder.HasKey(t => t.Id);
 
@@ -28,7 +28,9 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
             builder.Property(t => t.Type)
                 .HasConversion<int>()
                 .IsRequired();
-
+            builder.Property(x => x.ExternalPaymentId)
+            .HasMaxLength(100)
+            .IsRequired(false);
             builder.Property(t => t.Status)
                 .HasConversion<int>()
                 .IsRequired();

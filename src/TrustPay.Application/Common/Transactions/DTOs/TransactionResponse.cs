@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TrustPay.Domain.Enums;
 
 namespace TrustPay.Application.Common.Transactions.DTOs
 {
-    public record TransactionResponse(Guid Id,
+    public record TransactionResponse(
+        Guid Id,
         Guid? SenderWalletId,
         Guid? ReceiverWalletId,
         decimal Amount,

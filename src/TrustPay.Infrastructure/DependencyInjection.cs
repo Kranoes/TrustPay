@@ -9,10 +9,14 @@ using Microsoft.IdentityModel.Tokens;
 using TrustPay.Application.Common.Interfaces;
 using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
+using TrustPay.Application.Common.Interfaces.Webhook;
 using TrustPay.Infrastructure.Persistence;
 using TrustPay.Infrastructure.Persistence.Interceptors;
 using TrustPay.Infrastructure.Persistence.Repositories;
 using TrustPay.Infrastructure.Services.Authentication;
+using TrustPay.Infrastructure.Services.PaymentGateways;
+using TrustPay.Infrastructure.Services.Webhook;
+using TrustPay.Infrastructure.Services.Webhook.Options;
 
 namespace TrustPay.Infrastructure
 {
@@ -22,6 +26,7 @@ namespace TrustPay.Infrastructure
             this IServiceCollection services,
             IConfiguration configuration)
         {
+            services.Configure<BankOptions>(configuration.GetSection(BankOptions.SectionName));
             var jwtSettings = new JwtSettings();
             configuration.Bind(JwtSettings.SectionName, jwtSettings);
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
@@ -48,8 +53,13 @@ namespace TrustPay.Infrastructure
             });
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+
+            services.AddScoped<IPaymentSignatureValidator, PaymentSignatureValidator>();
             services.AddScoped<ITrustPayDbContext>(provider => provider.GetRequiredService<TrustPayDbContext>());
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IReviewRepository, ReviewRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IPaymentGatewayService, PaymentGatewayService>();
             services.AddScoped<ITransactionRepository, TransactionRepository>();
             services.AddScoped<IWalletRepository, WalletRepository>();
             services.AddScoped<IUserRepository, UserRepository>();

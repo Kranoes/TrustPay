@@ -30,7 +30,7 @@ namespace TrustPay.Domain.Entities
             }
             if (DateTime.UtcNow >=expireAt )
             {
-                return Result<RefreshToken>.Failure("Неверная дата регистрации токена.");
+                return Result<RefreshToken>.Failure("Срок действия токена не может быть в прошлом.");
             }
             
             var refreshToken  = new RefreshToken(token, DateTime.UtcNow, expireAt, userId);
