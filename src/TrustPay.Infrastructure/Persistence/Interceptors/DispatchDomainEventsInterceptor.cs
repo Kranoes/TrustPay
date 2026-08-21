@@ -4,6 +4,7 @@ using System.Text;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using TrustPay.Application.Common.Models;
 using TrustPay.Domain.Common;
 
 namespace TrustPay.Infrastructure.Persistence.Interceptors
@@ -40,7 +41,14 @@ namespace TrustPay.Infrastructure.Persistence.Interceptors
             aggregates.ForEach(e => e.ClearDomainEvents());
             foreach(var domainEvent in domainEvents)
             {
-                await _publisher.Publish(domainEvent,cancellationToken);
+                var notificationType = typeof(DomainEventNotification<>)
+                    .MakeGenericType(domainEvent.GetType());
+                var notification = Activator.CreateInstance(notificationType, domainEvent);
+                if (notification is not null)
+                {
+                    await _publisher.Publish(notification, cancellationToken);
+
+                }
             }
 
         }

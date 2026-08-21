@@ -5,7 +5,7 @@ using System.Text;
 namespace TrustPay.Domain.Common
 {
     
-    public interface IDomainEvent 
+    public interface IDomainEvent
     {
         Guid EventId { get; }
         DateTime OccurredOnUtc { get; }

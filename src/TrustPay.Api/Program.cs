@@ -8,7 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
-
+builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
 {
@@ -47,7 +48,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

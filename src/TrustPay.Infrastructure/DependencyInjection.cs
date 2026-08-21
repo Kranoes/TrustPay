@@ -43,6 +43,8 @@ namespace TrustPay.Infrastructure
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
                     };
                 });
+            services.AddHttpContextAccessor();
+            
             services.AddScoped<DispatchDomainEventsInterceptor>();
             var connectionString = configuration.GetConnectionString("DefaultConnection") 
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -54,6 +56,7 @@ namespace TrustPay.Infrastructure
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IPaymentSignatureValidator, PaymentSignatureValidator>();
             services.AddScoped<ITrustPayDbContext>(provider => provider.GetRequiredService<TrustPayDbContext>());
             services.AddScoped<IUnitOfWork, UnitOfWork>();
