@@ -11,8 +11,7 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
             builder.ToTable("orders");
             builder.HasKey(o => o.Id);
 
-            builder.Property(p => p.Status)
-                .IsRequired();
+            
 
             builder.Property(p => p.Quantity)
                 .IsRequired();
@@ -31,6 +30,11 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
                     .IsRequired();
             });
 
+            builder.Property(o=>o.Status)
+                .HasConversion<string>()
+                .HasMaxLength(50)
+                .IsRequired();
+                
             builder.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(f => f.CustomerId)

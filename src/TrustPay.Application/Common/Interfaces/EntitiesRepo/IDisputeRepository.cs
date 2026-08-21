@@ -16,6 +16,7 @@ public interface IDisputeRepository
     Task<Guid?> GetExecutorIdByDisputeAsync(Guid disputeId, CancellationToken cancellationToken = default);
     Task<DisputeStatus?> GetStatusOfDisputeByIdAsync(Guid disputeId, CancellationToken cancellationToken = default);
     Task<Guid?> GetAvailableArbitratorIdAsync(CancellationToken cancellationToken = default);
+    Task<bool> HasActiveDisputeForOrderAsync(Guid orderId, CancellationToken cancellationToken = default);
     Task AddAsync(Dispute dispute, CancellationToken cancellationToken = default);
     void Update(Dispute dispute);
 }

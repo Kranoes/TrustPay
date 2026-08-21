@@ -46,7 +46,12 @@ public class DisputeRepository : IDisputeRepository
             .Select(d => (Guid?)d.CustomerId)
             .FirstOrDefaultAsync(cancellationToken);
     }
-
+    public async Task<bool> HasActiveDisputeForOrderAsync(Guid orderId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Disputes
+            .AnyAsync(d => d.OrderId == orderId &&
+                           (d.Status == DisputeStatus.Opened || d.Status == DisputeStatus.UnderReview), cancellationToken);
+    }
     public async Task<Guid?> GetExecutorIdByDisputeAsync(Guid disputeId, CancellationToken cancellationToken = default)
     {
         return await _context.Disputes

@@ -1,5 +1,6 @@
 ﻿namespace TrustPay.Api.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrustPay.Application.Disputes.Commands.ChangeDisputeStatus;
@@ -67,8 +68,6 @@ public class DisputesController : ApiController
     {
         var command = new CreateDisputeCommand(
             request.OrderId,
-            request.CustomerId,
-            request.ExecutorId,
             request.Reason);
 
         var result = await Mediator.Send(command, cancellationToken);
@@ -80,8 +79,9 @@ public class DisputesController : ApiController
     }
 
     /// <summary>
-    /// Изменить статус спора (Арбитраж / Разрешение)
+    /// Изменить статус спора (Admin,Arbitrator)
     /// </summary>
+    [Authorize(Roles ="Admin,Arbitrator")]
     [HttpPatch("{id:guid}/status")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

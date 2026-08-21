@@ -22,5 +22,11 @@ namespace TrustPay.Infrastructure.Services.Authentication
                 return Guid.TryParse(idClaim, out var userId) ? userId : Guid.Empty;
             }
         }
+        public bool IsAdmin => IsInRole("Admin");
+        public bool IsArbitrator => IsInRole("Arbitrator");
+        public bool IsInRole(string role)
+        {
+            return _httpContextAccessor.HttpContext?.User.IsInRole(role) ?? false;
+        }
     }
 }
