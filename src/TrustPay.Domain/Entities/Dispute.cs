@@ -16,7 +16,6 @@ public class Dispute : AggregateRoot<Guid>
     public DateTime CreatedAt { get; private set; }
     public DateTime? ResolvedAt { get; private set; }
 
-
     private Dispute() { }
 
     private Dispute(
@@ -94,11 +93,16 @@ public class Dispute : AggregateRoot<Guid>
         return Result.Success();
     }
 
-    public Result ResolveInFavorOfCustomer()
+    public Result ResolveInFavorOfCustomer(Guid requestedByUserId, bool isAdmin)
     {
         if (Status != DisputeStatus.UnderReview)
         {
             return Result.Failure("Решение по спору может быть вынесено только во время рассмотрения.");
+        }
+
+        if (!isAdmin && ArbitratorId != requestedByUserId)
+        {
+            return Result.Failure("Вынести решение по спору может только назначенный арбитр или администратор.");
         }
 
         Status = DisputeStatus.ResolvedForBuyer;
@@ -109,11 +113,16 @@ public class Dispute : AggregateRoot<Guid>
         return Result.Success();
     }
 
-    public Result ResolveInFavorOfExecutor()
+    public Result ResolveInFavorOfExecutor(Guid requestedByUserId, bool isAdmin)
     {
         if (Status != DisputeStatus.UnderReview)
         {
             return Result.Failure("Решение по спору может быть вынесено только во время рассмотрения.");
+        }
+
+        if (!isAdmin && ArbitratorId != requestedByUserId)
+        {
+            return Result.Failure("Вынести решение по спору может только назначенный арбитр или администратор.");
         }
 
         Status = DisputeStatus.ResolvedForSeller;
@@ -124,11 +133,16 @@ public class Dispute : AggregateRoot<Guid>
         return Result.Success();
     }
 
-    public Result Cancel()
+    public Result Cancel(Guid requestedByUserId, bool isAdmin)
     {
         if (Status is DisputeStatus.ResolvedForBuyer or DisputeStatus.ResolvedForSeller or DisputeStatus.Cancelled)
         {
             return Result.Failure("Нельзя отменить уже закрытый или ранее отмененный спор.");
+        }
+
+        if (!isAdmin && requestedByUserId != CustomerId && requestedByUserId != ExecutorId)
+        {
+            return Result.Failure("Отменить спор могут только его участники или администратор.");
         }
 
         Status = DisputeStatus.Cancelled;

@@ -39,12 +39,9 @@ public class OrdersController : ApiController
     public async Task<IActionResult> Create([FromBody] CreateOrderRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateOrderCommand(
-            request.CustomerId,
-            request.ExecutorId,
             request.LotId,
-            request.Quantity,
-            request.Amount,
-            request.Currency);
+            request.Quantity
+            );
 
         var result = await Mediator.Send(command, cancellationToken);
 
