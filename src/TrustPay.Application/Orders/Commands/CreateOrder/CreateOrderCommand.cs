@@ -2,45 +2,53 @@
 
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Entities;
 using TrustPay.Domain.ValueObjects;
 
 public record CreateOrderCommand(
-    Guid CustomerId,
-    Guid ExecutorId,
     Guid LotId,
-    int Quantity,
-    decimal Amount,
-    string Currency
+    int Quantity
 ) : IRequest<Result<Guid>>;
 
 public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Result<Guid>>
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILotRepository _lotRepository;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CreateOrderCommandHandler(IOrderRepository orderRepository, IUnitOfWork unitOfWork)
+    public CreateOrderCommandHandler(IOrderRepository orderRepository, IUnitOfWork unitOfWork,ILotRepository lotRepository)
     {
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
+        _lotRepository = lotRepository;
     }
 
     public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
-        var moneyResult = Money.Create(request.Amount, request.Currency);
-        if (moneyResult.IsFailure)
+        var customerId = _currentUserService.UserId;
+        if (customerId == Guid.Empty)
         {
-            return Result<Guid>.Failure(moneyResult.Error);
+            return Result<Guid>.Failure("Пользователь не авторизован.");
         }
-
+        var lot = await _lotRepository.GetByIdAsync(request.LotId,cancellationToken);
+        if (lot is null)
+        {
+            return Result<Guid>.Failure("Лот не найден.");
+        }
+        if (customerId == lot.UserId)
+        {
+            return Result<Guid>.Failure("Исполнитель и заказчик не могуть быть одним лицом.");
+        }
         var orderResult = Order.Create(
-            request.CustomerId,
-            request.ExecutorId,
-            request.LotId,
+            customerId,
+            lot.UserId,
+            lot.Id,
             request.Quantity,
-            moneyResult.Value);
+            lot.Cost);
 
         if (orderResult.IsFailure)
         {
