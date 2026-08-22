@@ -7,6 +7,6 @@ public class DeleteOrderCommandValidator : AbstractValidator<DeleteOrderCommand>
     public DeleteOrderCommandValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty();
+            .NotEmpty().WithMessage("Идентификатор заказа обязателен.");
     }
 }

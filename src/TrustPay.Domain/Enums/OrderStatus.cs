@@ -7,8 +7,7 @@ namespace TrustPay.Domain.Enums
     public enum OrderStatus
     {
         Created,
-        Paid,
-        Delivered,
+        InProgress,
         Completed,
         Disputed,
         Cancelled

@@ -20,11 +20,12 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
     private readonly ILotRepository _lotRepository;
     private readonly ICurrentUserService _currentUserService;
 
-    public CreateOrderCommandHandler(IOrderRepository orderRepository, IUnitOfWork unitOfWork,ILotRepository lotRepository)
+    public CreateOrderCommandHandler(IOrderRepository orderRepository, IUnitOfWork unitOfWork,ILotRepository lotRepository,ICurrentUserService currentUserService)
     {
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
         _lotRepository = lotRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
