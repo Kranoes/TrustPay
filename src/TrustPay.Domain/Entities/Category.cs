@@ -46,16 +46,24 @@ namespace TrustPay.Domain.Entities
             return Result.Success(category);
         }
 
-        public Result UpdateDetails(string title, string description, CategoryType type)
+        public Result UpdateDetails(string? title, string? description, CategoryType? type)
         {
-            if (string.IsNullOrWhiteSpace(title))
+            if (title is not null)
             {
-                return Result.Failure("Название категории не может быть пустым.");
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    return Result.Failure("Название категории не может быть пустым.");
+                }
+                Title = title.Trim();
             }
-
-            Title = title.Trim();
-            Description = description?.Trim() ?? string.Empty;
-            Type = type;
+            if (description is not null)
+            {
+                Description = description.Trim();
+            }
+            if (type.HasValue)
+            {
+                Type = type.Value;
+            }
 
             AddDomainEvent(new CategoryUpdatedDomainEvent(Id, Title));
 

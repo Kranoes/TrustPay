@@ -1,31 +1,44 @@
-﻿using MediatR;
+﻿namespace TrustPay.Application.Categories.Commands.UpdateCategory;
+
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Enums;
 
-namespace TrustPay.Application.Categories.Commands.UpdateCategory;
-
 public record UpdateCategoryCommand(
     Guid Id,
-    string Title,
-    string Description,
-    CategoryType Type
+    string? Title,
+    string? Description,
+    CategoryType? Type
 ) : IRequest<Result>;
 
 public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, Result>
 {
     private readonly ICategoryRepository _categoryRepository;
+    private readonly ICurrentUserService _currentUserService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateCategoryCommandHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
+    public UpdateCategoryCommandHandler(
+        ICategoryRepository categoryRepository,
+        ICurrentUserService currentUserService,
+        IUnitOfWork unitOfWork)
     {
         _categoryRepository = categoryRepository;
+        _currentUserService = currentUserService;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<Result> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
     {
+        if (!_currentUserService.IsAdmin)
+        {
+            return Result.Failure("Только администратор имеет право редактировать категории.");
+        }
+
         var category = await _categoryRepository.GetByIdAsync(request.Id, cancellationToken);
         if (category is null)
         {

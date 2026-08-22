@@ -6,8 +6,7 @@ public class CreateLotCommandValidator : AbstractValidator<CreateLotCommand>
 {
     public CreateLotCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Идентификатор пользователя не может быть пустым.");
+       
 
         RuleFor(x => x.SubCategoryId)
             .NotEmpty().WithMessage("Идентификатор подкатегории не может быть пустым.");

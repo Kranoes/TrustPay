@@ -2,13 +2,13 @@
 
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Entities;
 using TrustPay.Domain.ValueObjects;
 
 public record CreateLotCommand(
-    Guid UserId,
     Guid SubCategoryId,
     string Title,
     decimal Amount,
@@ -21,19 +21,23 @@ public class CreateLotCommandHandler : IRequestHandler<CreateLotCommand, Result<
     private readonly ILotRepository _lotRepository;
     private readonly ISubCategoryRepository _subCategoryRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
     public CreateLotCommandHandler(
         ILotRepository lotRepository,
         ISubCategoryRepository subCategoryRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService)
     {
         _lotRepository = lotRepository;
         _subCategoryRepository = subCategoryRepository;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Guid>> Handle(CreateLotCommand request, CancellationToken cancellationToken)
     {
+        var currentUser = _currentUserService.UserId;
         var subCategory = await _subCategoryRepository.GetByIdAsync(request.SubCategoryId, cancellationToken);
         if (subCategory is null)
         {
@@ -47,7 +51,7 @@ public class CreateLotCommandHandler : IRequestHandler<CreateLotCommand, Result<
         }
 
         var lotResult = Lot.Create(
-            request.UserId,
+            currentUser,
             request.SubCategoryId,
             request.Title,
             moneyResult.Value,

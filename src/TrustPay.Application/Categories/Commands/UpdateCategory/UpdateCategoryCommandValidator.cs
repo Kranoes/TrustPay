@@ -10,13 +10,16 @@ public class UpdateCategoryCommandValidator : AbstractValidator<UpdateCategoryCo
             .NotEmpty().WithMessage("Идентификатор категории обязателен.");
 
         RuleFor(x => x.Title)
-            .NotEmpty().WithMessage("Заголовок категории обязателен.")
-            .MaximumLength(100).WithMessage("Заголовок не должен превышать 100 символов.");
+            .NotEmpty().WithMessage("Заголовок не может быть пустым.")
+            .MaximumLength(100).WithMessage("Заголовок не должен превышать 100 символов.")
+            .When(x=>x.Title != null);
 
         RuleFor(x => x.Description)
-            .MaximumLength(500).WithMessage("Описание не должно превышать 500 символов.");
+            .MaximumLength(500).WithMessage("Описание не должно превышать 500 символов.")
+            .When(x=>x.Description != null);
 
         RuleFor(x => x.Type)
-            .IsInEnum().WithMessage("Указан неверный тип категории.");
+            .IsInEnum().WithMessage("Указан неверный тип категории.")
+            .When (x=>x.Type.HasValue);
     }
 }

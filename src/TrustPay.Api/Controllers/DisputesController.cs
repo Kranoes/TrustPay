@@ -15,19 +15,15 @@ using TrustPay.Domain.Enums;
 /// Управление спорами и арбитражем
 /// </summary>
 [Route("api/disputes")]
+[Authorize]
 public class DisputesController : ApiController
 {
     /// <summary>
-    /// Получить список споров (всех или по фильтрам)
+    /// Получить список споров
     /// </summary>
-    /// <remarks>
-    /// Примеры:
-    /// - GET /api/disputes
-    /// - GET /api/disputes?status=UnderReview
-    /// - GET /api/disputes?keywords=quality&amp;keywords=delay
-    /// </remarks>
     [HttpGet]
     [ProducesResponseType(typeof(List<DisputeResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll(
         [FromQuery] DisputeStatus? status,
         [FromQuery] Guid? customerId,
@@ -47,6 +43,8 @@ public class DisputesController : ApiController
     /// </summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(DisputeResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
     {
@@ -62,9 +60,10 @@ public class DisputesController : ApiController
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create(
-    [FromBody] CreateDisputeRequest request,
-    CancellationToken cancellationToken)
+        [FromBody] CreateDisputeRequest request,
+        CancellationToken cancellationToken)
     {
         var command = new CreateDisputeCommand(
             request.OrderId,
@@ -79,12 +78,14 @@ public class DisputesController : ApiController
     }
 
     /// <summary>
-    /// Изменить статус спора (Admin,Arbitrator)
+    /// Изменить статус спора (Admin, Arbitrator)
     /// </summary>
-    [Authorize(Roles ="Admin,Arbitrator")]
+    [Authorize(Roles = "Admin,Arbitrator")]
     [HttpPatch("{id:guid}/status")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateStatus(
         [FromRoute] Guid id,
@@ -97,5 +98,3 @@ public class DisputesController : ApiController
         return HandleResult(result);
     }
 }
-
-

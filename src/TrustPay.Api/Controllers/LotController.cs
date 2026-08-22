@@ -1,5 +1,6 @@
 ﻿namespace TrustPay.Api.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrustPay.Application.Lots.Commands.CreateLot;
@@ -44,15 +45,29 @@ public class LotsController : ApiController
     }
 
     /// <summary>
+    /// Получить список лотов по подкатегории
+    /// </summary>
+    [HttpGet("subcategory/{subCategoryId:guid}")]
+    [ProducesResponseType(typeof(List<LotResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetBySubCategoryId([FromRoute] Guid subCategoryId, CancellationToken cancellationToken)
+    {
+        var query = new GetLotsBySubCategoryIdQuery(subCategoryId);
+        var result = await Mediator.Send(query, cancellationToken);
+
+        return HandleResult(result);
+    }
+
+    /// <summary>
     /// Создать новый лот
     /// </summary>
+    [Authorize]
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create([FromBody] CreateLotRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateLotCommand(
-            request.UserId,
             request.SubCategoryId,
             request.Title,
             request.Amount,
@@ -68,11 +83,14 @@ public class LotsController : ApiController
     }
 
     /// <summary>
-    /// Обновить данные лота
+    /// Частично обновить данные лота
     /// </summary>
-    [HttpPut("{id:guid}")]
+    [Authorize]
+    [HttpPatch("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
         [FromRoute] Guid id,
@@ -94,8 +112,11 @@ public class LotsController : ApiController
     /// <summary>
     /// Удалить лот
     /// </summary>
+    [Authorize]
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
     {
@@ -104,22 +125,9 @@ public class LotsController : ApiController
 
         return HandleResult(result);
     }
-    /// <summary>
-    /// Получить список лотов по подкатегории
-    /// </summary>
-    [HttpGet("subcategory/{subCategoryId:guid}")]
-    [ProducesResponseType(typeof(List<LotResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetBySubCategoryId([FromRoute] Guid subCategoryId, CancellationToken cancellationToken)
-    {
-        var query = new GetLotsBySubCategoryIdQuery(subCategoryId);
-        var result = await Mediator.Send(query, cancellationToken);
-
-        return HandleResult(result);
-    }
 }
 
 public record CreateLotRequest(
-    Guid UserId,
     Guid SubCategoryId,
     string Title,
     decimal Amount,
@@ -127,7 +135,7 @@ public record CreateLotRequest(
     int ItemsCount);
 
 public record UpdateLotRequest(
-    string Title,
-    decimal Amount,
-    string Currency,
-    int ItemsCount);
+    string? Title,
+    decimal? Amount,
+    string? Currency,
+    int? ItemsCount);
