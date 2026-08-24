@@ -8,6 +8,8 @@ using TrustPay.Domain.Common;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
 public abstract class ApiController : ControllerBase
 {
     private ISender? _mediator;

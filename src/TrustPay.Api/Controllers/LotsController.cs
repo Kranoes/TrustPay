@@ -20,9 +20,13 @@ public class LotsController : ApiController
     /// <summary>
     /// Получить лот по идентификатору
     /// </summary>
+    /// <param name="id">Идентификатор лота</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Лот найден</response>
+    /// <response code="404">Лот не найден</response>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(LotResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var query = new GetByIdQuery(id);
@@ -32,8 +36,11 @@ public class LotsController : ApiController
     }
 
     /// <summary>
-    /// Получить список лотов пользователя
+    /// Получить список лотов конкретного пользователя
     /// </summary>
+    /// <param name="userId">Идентификатор пользователя</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Список лотов пользователя получен</response>
     [HttpGet("user/{userId:guid}")]
     [ProducesResponseType(typeof(List<LotResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByUserId([FromRoute] Guid userId, CancellationToken cancellationToken)
@@ -47,6 +54,9 @@ public class LotsController : ApiController
     /// <summary>
     /// Получить список лотов по подкатегории
     /// </summary>
+    /// <param name="subCategoryId">Идентификатор подкатегории</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Список лотов подкатегории получен</response>
     [HttpGet("subcategory/{subCategoryId:guid}")]
     [ProducesResponseType(typeof(List<LotResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBySubCategoryId([FromRoute] Guid subCategoryId, CancellationToken cancellationToken)
@@ -60,11 +70,16 @@ public class LotsController : ApiController
     /// <summary>
     /// Создать новый лот
     /// </summary>
+    /// <param name="request">Параметры нового лота</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="201">Лот успешно создан</response>
+    /// <response code="400">Ошибка валидации параметров</response>
+    /// <response code="401">Пользователь не авторизован</response>
     [Authorize]
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create([FromBody] CreateLotRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateLotCommand(
@@ -85,13 +100,21 @@ public class LotsController : ApiController
     /// <summary>
     /// Частично обновить данные лота
     /// </summary>
+    /// <param name="id">Идентификатор обновляемого лота</param>
+    /// <param name="request">Измененные поля лота</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Данные лота успешно обновлены</response>
+    /// <response code="400">Ошибка валидации</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="403">Вы не являетесь владельцем этого лота</response>
+    /// <response code="404">Лот не найден</response>
     [Authorize]
     [HttpPatch("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
         [FromRoute] Guid id,
         [FromBody] UpdateLotRequest request,
@@ -112,12 +135,18 @@ public class LotsController : ApiController
     /// <summary>
     /// Удалить лот
     /// </summary>
+    /// <param name="id">Идентификатор лота</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Лот успешно удален</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="403">Вы не являетесь владельцем этого лота</response>
+    /// <response code="404">Лот не найден</response>
     [Authorize]
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var command = new DeleteLotCommand(id);

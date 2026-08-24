@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using TrustPay.Application.Common.Interfaces.Auth;
+using TrustPay.Domain.Enums;
 
 namespace TrustPay.Infrastructure.Services.Authentication
 {
@@ -22,8 +23,8 @@ namespace TrustPay.Infrastructure.Services.Authentication
                 return Guid.TryParse(idClaim, out var userId) ? userId : Guid.Empty;
             }
         }
-        public bool IsAdmin => IsInRole("Admin");
-        public bool IsArbitrator => IsInRole("Arbitrator");
+        public bool IsAdmin => IsInRole(nameof(UserRole.Admin));
+        public bool IsArbitrator => IsInRole(nameof(UserRole.Arbitrator));
         public bool IsInRole(string role)
         {
             return _httpContextAccessor.HttpContext?.User.IsInRole(role) ?? false;
