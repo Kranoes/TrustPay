@@ -1,51 +1,79 @@
 ﻿namespace TrustPay.Application.Wallets.Commands.DepositMoney;
 
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
+using TrustPay.Domain.Entities;
 using TrustPay.Domain.ValueObjects;
 
-public record DepositMoneyCommand (
+public record DepositMoneyCommand(
     Guid WalletId,
     decimal Amount,
-    string Currency
-    ) : IRequest<Result>;   
+    string Currency = "RUB") : IRequest<Result>;
+
 public class DepositMoneyCommandHandler : IRequestHandler<DepositMoneyCommand, Result>
 {
     private readonly IWalletRepository _walletRepository;
+    private readonly ITransactionRepository _transactionRepository;
+    private readonly ICurrentUserService _currentUserService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public DepositMoneyCommandHandler(IWalletRepository walletRepository, IUnitOfWork unitOfWork)
+    public DepositMoneyCommandHandler(
+        IWalletRepository walletRepository,
+        ITransactionRepository transactionRepository,
+        ICurrentUserService currentUserService,
+        IUnitOfWork unitOfWork)
     {
         _walletRepository = walletRepository;
+        _transactionRepository = transactionRepository;
+        _currentUserService = currentUserService;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<Result> Handle(DepositMoneyCommand request, CancellationToken cancellationToken)
     {
+        var wallet = await _walletRepository.GetByIdAsync(request.WalletId, cancellationToken);
+        if (wallet is null)
+        {
+            return Error.NotFound("Wallet.NotFound", $"Кошелек с ID '{request.WalletId}' не найден.");
+        }
+
+        if (wallet.UserId != _currentUserService.UserId && !_currentUserService.IsAdmin)
+        {
+            return Error.Forbidden("Wallet.Forbidden", "У вас нет прав на пополнение данного кошелька.");
+        }
+
         var moneyResult = Money.Create(request.Amount, request.Currency);
         if (moneyResult.IsFailure)
         {
             return Result.Failure(moneyResult.Error);
         }
 
-        Money money = moneyResult.Value;
-
-        var wallet = await _walletRepository.GetByIdAsync(request.WalletId, cancellationToken);
-        if (wallet is null)
-        {
-            return Result.Failure($"Кошелек с ID '{request.WalletId}' не найден");
-        }
-
-        Result depositResult = wallet.Deposit(money);
+        var depositResult = wallet.Deposit(moneyResult.Value);
         if (depositResult.IsFailure)
         {
             return depositResult;
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var transactionResult = Transaction.CreateDeposit(wallet.Id, moneyResult.Value);
+        if (transactionResult.IsFailure)
+        {
+            return Result.Failure(transactionResult.Error);
+        }
 
-        return Result.Success();
+        await _transactionRepository.AddAsync(transactionResult.Value, cancellationToken);
+
+        try
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result.Success();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Error.Conflict("Wallet.ConcurrencyConflict", "Баланс кошелька был изменен другим запросом. Повторите попытку.");
+        }
     }
 }

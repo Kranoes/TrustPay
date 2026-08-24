@@ -1,10 +1,10 @@
-﻿namespace TrustPay.Application.Wallets.Commands.UnfreezeWallet;
+﻿namespace TrustPay.Application.Wallets.Commands.FreezeWallet;
 
 using FluentValidation;
 
-public class UnfreezeWalletCommandValidator : AbstractValidator<UnfreezeWalletCommand>
+public class FreezeWalletCommandValidator : AbstractValidator<FreezeWalletCommand>
 {
-    public UnfreezeWalletCommandValidator()
+    public FreezeWalletCommandValidator()
     {
         RuleFor(x => x.WalletId)
             .NotEmpty()
