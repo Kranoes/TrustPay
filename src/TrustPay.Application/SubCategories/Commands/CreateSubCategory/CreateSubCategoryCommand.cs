@@ -1,34 +1,40 @@
 ﻿namespace TrustPay.Application.SubCategories.Commands.CreateSubCategory;
 
-using FluentValidation;
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Entities;
 
 public record CreateSubCategoryCommand(Guid CategoryId, string Title) : IRequest<Result<Guid>>;
 
-
-
 public class CreateSubCategoryCommandHandler : IRequestHandler<CreateSubCategoryCommand, Result<Guid>>
 {
     private readonly ISubCategoryRepository _subCategoryRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
     public CreateSubCategoryCommandHandler(
         ISubCategoryRepository subCategoryRepository,
         ICategoryRepository categoryRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService)
     {
         _subCategoryRepository = subCategoryRepository;
         _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Guid>> Handle(CreateSubCategoryCommand request, CancellationToken cancellationToken)
     {
+        if (!_currentUserService.IsAdmin)
+        {
+            return Result.Failure<Guid>("Недостаточно прав для выполнения операции.");
+        }
+
         var category = await _categoryRepository.GetByIdAsync(request.CategoryId, cancellationToken);
         if (category is null)
         {

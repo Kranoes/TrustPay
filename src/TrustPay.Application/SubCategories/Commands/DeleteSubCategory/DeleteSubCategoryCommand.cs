@@ -2,6 +2,7 @@
 
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 
@@ -11,17 +12,25 @@ public class DeleteSubCategoryCommandHandler : IRequestHandler<DeleteSubCategory
 {
     private readonly ISubCategoryRepository _subCategoryRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
     public DeleteSubCategoryCommandHandler(
         ISubCategoryRepository subCategoryRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService)
     {
         _subCategoryRepository = subCategoryRepository;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(DeleteSubCategoryCommand request, CancellationToken cancellationToken)
     {
+        if (!_currentUserService.IsAdmin)
+        {
+            return Result.Failure("Недостаточно прав для выполнения операции.");
+        }
+
         var subCategory = await _subCategoryRepository.GetByIdAsync(request.Id, cancellationToken);
         if (subCategory is null)
         {
