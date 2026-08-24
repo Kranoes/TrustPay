@@ -22,10 +22,15 @@ public class OrdersController : ApiController
     /// <summary>
     /// Получить заказ по идентификатору
     /// </summary>
+    /// <param name="id">Идентификатор заказа</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Информация о заказе получена</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="404">Заказ не найден</response>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var query = new GetOrderByIdQuery(id);
@@ -37,10 +42,15 @@ public class OrdersController : ApiController
     /// <summary>
     /// Создать новый заказ
     /// </summary>
+    /// <param name="request">Данные для оформления заказа</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="201">Заказ успешно сформирован</response>
+    /// <response code="400">Недостаточно товара или некорректное количество</response>
+    /// <response code="401">Пользователь не авторизован</response>
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create([FromBody] CreateOrderRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateOrderCommand(
@@ -56,13 +66,19 @@ public class OrdersController : ApiController
     }
 
     /// <summary>
-    /// Приступить к выполнению заказа (Только Исполнитель)
+    /// Приступить к выполнению заказа
     /// </summary>
+    /// <param name="id">Идентификатор заказа</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Заказ переведен в статус выполнения</response>
+    /// <response code="400">Недопустимый текущий статус заказа</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="404">Заказ не найден</response>
     [HttpPost("{id:guid}/start")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Start([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var command = new StartOrderCommand(id);
@@ -72,13 +88,19 @@ public class OrdersController : ApiController
     }
 
     /// <summary>
-    /// Подтвердить завершение заказа (Только Заказчик)
+    /// Подтвердить завершение заказа
     /// </summary>
+    /// <param name="id">Идентификатор заказа</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Заказ успешно завершен</response>
+    /// <response code="400">Недопустимый текущий статус заказа</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="404">Заказ не найден</response>
     [HttpPost("{id:guid}/complete")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Complete([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var command = new CompleteOrderCommand(id);
@@ -90,11 +112,17 @@ public class OrdersController : ApiController
     /// <summary>
     /// Отменить заказ
     /// </summary>
+    /// <param name="id">Идентификатор заказа</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Заказ отменен</response>
+    /// <response code="400">Невозможно отменить заказ на данном этапе</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="404">Заказ не найден</response>
     [HttpPost("{id:guid}/cancel")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Cancel([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var command = new CancelOrderCommand(id);
@@ -104,14 +132,20 @@ public class OrdersController : ApiController
     }
 
     /// <summary>
-    /// Физическое удаление заказа (Только Admin)
+    /// Физическое удаление заказа из системы
     /// </summary>
-    [Authorize(Roles = "Admin")]
+    /// <param name="id">Идентификатор заказа</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Заказ успешно удален</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
+    /// <response code="404">Заказ не найден</response>
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var command = new DeleteOrderCommand(id);
@@ -124,4 +158,3 @@ public class OrdersController : ApiController
 public record CreateOrderRequest(
     Guid LotId,
     int Quantity);
-

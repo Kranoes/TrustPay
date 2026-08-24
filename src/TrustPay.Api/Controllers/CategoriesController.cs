@@ -16,16 +16,20 @@ using TrustPay.Domain.Enums;
 /// Управление категориями операций
 /// </summary>
 [Route("api/categories")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = nameof(UserRole.Admin))]
 public class CategoriesController : ApiController
 {
     /// <summary>
     /// Получить категорию по идентификатору
     /// </summary>
+    /// <param name="id">Идентификатор категории</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Категория успешно найдена</response>
+    /// <response code="404">Категория с указанным ID не найдена</response>
     [AllowAnonymous]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var query = new GetCategoryByIdQuery(id);
@@ -37,6 +41,8 @@ public class CategoriesController : ApiController
     /// <summary>
     /// Получить список всех категорий
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Список категорий успешно получен</response>
     [AllowAnonymous]
     [HttpGet("all")]
     [ProducesResponseType(typeof(List<CategoryResponse>), StatusCodes.Status200OK)]
@@ -49,11 +55,16 @@ public class CategoriesController : ApiController
     }
 
     /// <summary>
-    /// Поиск категорий
+    /// Поиск категорий по фильтрам
     /// </summary>
+    /// <param name="request">Параметры фильтрации и поиска категорий</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Список найденных категорий</response>
+    /// <response code="400">Ошибка в параметрах запроса</response>
     [AllowAnonymous]
     [HttpGet("search")]
     [ProducesResponseType(typeof(List<CategoryResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Search([FromQuery] SearchCategoriesQuery request, CancellationToken cancellationToken)
     {
         var result = await Mediator.Send(request, cancellationToken);
@@ -63,11 +74,17 @@ public class CategoriesController : ApiController
     /// <summary>
     /// Создать новую категорию
     /// </summary>
+    /// <param name="request">Данные для создания категории</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="201">Категория успешно создана</response>
+    /// <response code="400">Ошибка валидации входных данных</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateCategoryCommand(request.Title, request.Description, request.Type);
@@ -80,14 +97,22 @@ public class CategoriesController : ApiController
     }
 
     /// <summary>
-    /// Частично обновить категорию
+    /// Частично обновить данные категории
     /// </summary>
+    /// <param name="id">Идентификатор категории</param>
+    /// <param name="request">Данные для обновления</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Категория успешно обновлена</response>
+    /// <response code="400">Ошибка валидации</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
+    /// <response code="404">Категория не найдена</response>
     [HttpPatch("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateCategoryRequest request, CancellationToken cancellationToken)
     {
         var command = new UpdateCategoryCommand(id, request.Title, request.Description, request.Type);
@@ -99,12 +124,19 @@ public class CategoriesController : ApiController
     /// <summary>
     /// Удалить категорию по идентификатору
     /// </summary>
+    /// <param name="id">Идентификатор удаляемой категории</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Категория успешно удалена</response>
+    /// <response code="400">Нельзя удалить категорию, содержащую связанные сущности</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
+    /// <response code="404">Категория не найдена</response>
     [HttpDelete("{id:guid}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var command = new DeleteCategoryCommand(id);

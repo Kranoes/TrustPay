@@ -20,10 +20,14 @@ public class ReviewsController : ApiController
     /// <summary>
     /// Получить отзыв по идентификатору
     /// </summary>
+    /// <param name="id">Идентификатор отзыва</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Отзыв найден</response>
+    /// <response code="404">Отзыв не найден</response>
     [AllowAnonymous]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ReviewResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var query = new GetReviewByIdQuery(id);
@@ -35,10 +39,14 @@ public class ReviewsController : ApiController
     /// <summary>
     /// Получить отзыв по идентификатору заказа
     /// </summary>
+    /// <param name="orderId">Идентификатор заказа</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Отзыв найден</response>
+    /// <response code="404">Отзыв к данному заказу не найден</response>
     [AllowAnonymous]
     [HttpGet("by-order/{orderId:guid}")]
     [ProducesResponseType(typeof(ReviewResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByOrderId([FromRoute] Guid orderId, CancellationToken cancellationToken)
     {
         var query = new GetReviewByOrderIdQuery(orderId);
@@ -48,13 +56,19 @@ public class ReviewsController : ApiController
     }
 
     /// <summary>
-    /// Оставить отзыв к заказу
+    /// Оставить отзыв к выполненному заказу
     /// </summary>
+    /// <param name="request">Текст и оценка отзыва</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="201">Отзыв успешно опубликован</response>
+    /// <response code="400">Некорректная оценка или статус заказа не позволяет оставить отзыв</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="409">Отзыв к этому заказу уже существует</response>
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Create([FromBody] CreateReviewRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateReviewCommand(
@@ -72,13 +86,20 @@ public class ReviewsController : ApiController
     }
 
     /// <summary>
-    /// Обновить отзыв
+    /// Обновить ранее оставленный отзыв
     /// </summary>
+    /// <param name="id">Идентификатор отзыва</param>
+    /// <param name="request">Новый текст и оценка</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Отзыв успешно обновлен</response>
+    /// <response code="400">Ошибка валидации данных</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="404">Отзыв не найден</response>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
         [FromRoute] Guid id,
         [FromBody] UpdateReviewRequest request,
@@ -93,10 +114,15 @@ public class ReviewsController : ApiController
     /// <summary>
     /// Удалить отзыв
     /// </summary>
+    /// <param name="id">Идентификатор отзыва</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <response code="200">Отзыв успешно удален</response>
+    /// <response code="401">Пользователь не авторизован</response>
+    /// <response code="404">Отзыв не найден</response>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var command = new DeleteReviewCommand(id);
