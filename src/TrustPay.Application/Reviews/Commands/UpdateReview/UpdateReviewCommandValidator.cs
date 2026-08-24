@@ -8,19 +8,19 @@ public class UpdateReviewCommandValidator : AbstractValidator<UpdateReviewComman
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("Идентификатор отзыва не может быть пустым.");
+            .WithMessage("Идентификатор отзыва обязателен.");
 
         RuleFor(x => x.Title)
             .NotEmpty()
             .WithMessage("Заголовок отзыва обязателен.")
-            .MaximumLength(200)
-            .WithMessage("Заголовок отзыва не должен превышать 200 символов.");
+            .MaximumLength(50)
+            .WithMessage("Заголовок отзыва не должен превышать 50 символов.");
 
         RuleFor(x => x.Message)
             .NotEmpty()
             .WithMessage("Текст отзыва обязателен.")
-            .MaximumLength(2000)
-            .WithMessage("Текст отзыва не должен превышать 2000 символов.");
+            .MaximumLength(200)
+            .WithMessage("Текст отзыва не должен превышать 200 символов.");
 
         RuleFor(x => x.Rating)
             .InclusiveBetween(1, 5)

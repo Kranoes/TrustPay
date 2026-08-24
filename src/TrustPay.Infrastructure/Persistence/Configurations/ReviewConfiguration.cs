@@ -25,6 +25,20 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
             .OnDelete(DeleteBehavior.Restrict);
             builder.HasIndex(r => r.OrderId)
                 .IsUnique();
+            builder.HasIndex(r => r.OrderId)
+            .IsUnique();
+
+            builder.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(r => r.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(r => r.TargetUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(r => r.TargetUserId);
         }
     }
 }
