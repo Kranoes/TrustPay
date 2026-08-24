@@ -5,8 +5,15 @@ public class WithdrawMoneyCommandValidator : AbstractValidator<WithdrawMoneyComm
 {
     public WithdrawMoneyCommandValidator()
     {
-        RuleFor(x => x.WalletId).NotEmpty();
-        RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Сумма списания должна быть больше 0.");
-        RuleFor(x => x.Currency).NotEmpty().Length(3).WithMessage("Код валюты должен состоять из 3 символов.");
+        RuleFor(x => x.WalletId)
+            .NotEmpty()
+            .WithMessage("ID кошелька не может быть пустым.");
+        RuleFor(x => x.Amount)
+            .GreaterThan(0)
+            .WithMessage("Сумма списания должна быть больше 0.");
+        RuleFor(x => x.Currency)
+            .NotEmpty()
+            .Length(3)
+            .WithMessage("Код валюты должен состоять из 3 символов.");
     }
 }
