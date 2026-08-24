@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 
@@ -14,15 +15,25 @@ public class DeleteTagCommandHandler : IRequestHandler<DeleteTagCommand, Result<
 {
     private readonly ITagRepository _tagRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public DeleteTagCommandHandler(ITagRepository tagRepository, IUnitOfWork unitOfWork)
+    public DeleteTagCommandHandler(
+        ITagRepository tagRepository,
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService)
     {
         _tagRepository = tagRepository;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Unit>> Handle(DeleteTagCommand request, CancellationToken cancellationToken)
     {
+        if (!_currentUserService.IsAdmin)
+        {
+            return Result.Failure<Unit>("Недостаточно прав для выполнения операции.");
+        }
+
         var tag = await _tagRepository.GetByIdAsync(request.Id, cancellationToken);
         if (tag is null)
         {
