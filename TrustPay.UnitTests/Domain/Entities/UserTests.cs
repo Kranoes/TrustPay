@@ -3,6 +3,7 @@ using FluentAssertions.Equivalency;
 using TrustPay.Domain.Entities;
 using Xunit;
 using FluentAssertions;
+using TrustPay.Domain.Common;
 
 namespace TrustPay.UnitTests.Domain.Entities
 {
@@ -35,10 +36,11 @@ namespace TrustPay.UnitTests.Domain.Entities
             var tokenValue = "token_to_revoke";
             user.AddRefreshToken(tokenValue, DateTime.UtcNow.AddDays(7));
 
-            user.RevokeRefreshToken(tokenValue);
+            var result = user.RevokeRefreshToken(tokenValue);
 
+            result.IsSuccess.Should().BeTrue();
             var token = user.RefreshTokens.Single(t => t.Token == tokenValue);
-            token.IsExpired.Should().BeTrue();
+            token.IsRevoked.Should().BeTrue();
         }
     }
 }

@@ -87,7 +87,7 @@ namespace TrustPay.Domain.Entities
             {
                 return Result.Failure(result.Error);
             }
-            _refreshTokens.RemoveAll(t => t.IsExpired);
+            _refreshTokens.RemoveAll(t => !t.IsActive);
             if (_refreshTokens.Count >= MaxActiveTokens)
             {
                 var oldestToken = _refreshTokens.OrderBy(t => t.CreatedAt).First();
@@ -104,8 +104,7 @@ namespace TrustPay.Domain.Entities
                 return Result.Failure("Токен не найден.");
             }
 
-            _refreshTokens.Remove(refreshToken);
-            return Result.Success();
+            return refreshToken.Revoke();
         }
 
     }
