@@ -6,4 +6,7 @@
     <Project Path="src/TrustPay.Domain/TrustPay.Domain.csproj" />
     <Project Path="src/TrustPay.Infrastructure/TrustPay.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="TrustPay.UnitTests/TrustPay.UnitTests.csproj" Id="011588b8-9e75-48ba-93d1-b029c3936059" />
+  </Folder>
 </Solution>

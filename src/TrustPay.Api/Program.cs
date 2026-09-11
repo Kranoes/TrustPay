@@ -3,6 +3,7 @@ using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using TrustPay.Application;
 using TrustPay.Infrastructure;
+using TrustPay.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +46,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    await DbInitializer.SeedAsync(app.Services);
     app.MapOpenApi();
     app.MapScalarApiReference();
 }

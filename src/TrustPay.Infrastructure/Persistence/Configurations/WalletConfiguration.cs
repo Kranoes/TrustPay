@@ -11,13 +11,14 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
             builder.ToTable("wallets");
             builder.HasKey(w => w.Id);
 
+            builder.Property(w => w.UserId)
+                .IsRequired();
+
+            builder.HasIndex(w => w.UserId)
+                .IsUnique();
+
             builder.Property(w => w.Version)
                 .IsRowVersion();
-
-            builder.HasOne<User>()
-                .WithOne()
-                .HasForeignKey<Wallet>(w => w.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             builder.ComplexProperty(w => w.AvailableBalance, balanceBuilder =>
             {

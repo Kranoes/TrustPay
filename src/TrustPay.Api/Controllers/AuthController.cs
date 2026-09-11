@@ -1,7 +1,9 @@
 ﻿namespace TrustPay.Api.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TrustPay.Application.Common.Authentication.Commands.Logout;
 using TrustPay.Application.Common.Authentication.Commands.RefreshToken;
 using TrustPay.Application.Common.Authentication.Commands.Register;
 using TrustPay.Application.Common.Authentication.Queries.Login;
@@ -65,4 +67,22 @@ public class AuthController : ApiController
         var result = await Mediator.Send(command, cancellationToken);
         return HandleResult(result);
     }
+    /// <summary>
+     /// Выход из системы (отзыв Refresh-токена)
+     /// </summary>
+    [Authorize]
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Logout(
+        [FromBody] LogoutRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new LogoutCommand(request.RefreshToken);
+        var result = await Mediator.Send(command, cancellationToken);
+
+        return HandleResult(result);
+    }
 }
+public record LogoutRequest(string RefreshToken);

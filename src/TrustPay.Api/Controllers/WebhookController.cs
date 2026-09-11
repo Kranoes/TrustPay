@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrustPay.Api.Filters;
@@ -11,6 +12,7 @@ namespace TrustPay.Api.Controllers;
 
 [Route("api/v1/webhooks")]
 [EnableBuffering]
+[AllowAnonymous]
 public class WebhookController : ApiController
 {
     private readonly IPaymentSignatureValidator _signatureValidator;
