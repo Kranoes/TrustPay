@@ -38,7 +38,7 @@ namespace TrustPay.UnitTests.Domain.Entities
             user.RevokeRefreshToken(tokenValue);
 
             var token = user.RefreshTokens.Single(t => t.Token == tokenValue);
-            token.IsRevoked.Should().BeTrue();
+            token.IsExpired.Should().BeTrue();
         }
     }
 }

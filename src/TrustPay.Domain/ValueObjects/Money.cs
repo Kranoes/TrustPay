@@ -35,11 +35,11 @@ namespace TrustPay.Domain.ValueObjects
             return Result.Success(new Money(Amount - other.Amount, Currency));
 
     }
-    public Money Add(Money other)
+    public Result<Money> Add(Money other)
         {
             if (other.Currency != Currency)
-            { throw new ArgumentException($"Нельзя складывать разные валюты: {Currency} и {other.Currency}"); }
-            return new Money(Amount+other.Amount, Currency);
+            { return Result<Money>.Failure($"Нельзя складывать разные валюты: {Currency} и {other.Currency}"); }
+            return Result.Success(new Money(Amount+other.Amount, Currency));
         }
     public static Result<Money>Create(decimal amount,string currency)
         {

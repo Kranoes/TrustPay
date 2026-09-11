@@ -71,7 +71,7 @@ namespace TrustPay.Domain.Entities
                 return validateResult;
             }
 
-            AvailableBalance = AvailableBalance.Add(amount);
+            AvailableBalance = AvailableBalance.Add(amount).Value;
 
             AddDomainEvent(new WalletDepositedDomainEvent(Id, amount));
 
@@ -114,7 +114,7 @@ namespace TrustPay.Domain.Entities
             }
 
             AvailableBalance = subtractResult.Value;
-            LockedBalance = LockedBalance.Add(amount);
+            LockedBalance = LockedBalance.Add(amount).Value;
 
             AddDomainEvent(new WalletFundsLockedDomainEvent(Id, amount));
 
@@ -136,7 +136,7 @@ namespace TrustPay.Domain.Entities
             }
 
             LockedBalance = lockedSubtractResult.Value;
-            AvailableBalance = AvailableBalance.Add(amount);
+            AvailableBalance = AvailableBalance.Add(amount).Value;
 
             AddDomainEvent(new WalletLockedFundsReleasedDomainEvent(Id, amount));
 
