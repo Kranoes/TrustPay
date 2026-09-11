@@ -3,18 +3,21 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TrustPay.Infrastructure;
 
 #nullable disable
 
-namespace TrustPay.Infrastructure.Migrations
+namespace TrustPay.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TrustPayDbContext))]
-    partial class TrustPayDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260828130522_RemoveWalletUserForeignKey")]
+    partial class RemoveWalletUserForeignKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
