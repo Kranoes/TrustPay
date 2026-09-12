@@ -97,13 +97,19 @@ namespace TrustPay.Domain.Entities
             return Result.Failure("Тег не найден в подкатегории.");
 
         }
-        public void LoadTags(IEnumerable<Guid> tagIds)
+        public Result LoadTags(IEnumerable<Guid> tagIds)
         {
-            _tagsIds.Clear();
             if (tagIds is null)
             {
-                return;
+                return Result.Failure("Список идентификаторов тегов не может быть пустым.");
             }
+            var validTagIds = tagIds.Where(id => id != Guid.Empty).ToList();
+            if (validTagIds.Count == 0)
+            {
+                return Result.Failure("Список идентификаторов тегов не может быть пустым.");
+            }
+            _tagsIds.Clear();
+
             foreach (var tagId in tagIds)
             {
                 if (tagId != Guid.Empty)
@@ -111,20 +117,23 @@ namespace TrustPay.Domain.Entities
                     _tagsIds.Add(tagId);
                 }
             }
+            return Result.Success();
         }
         public void IncrementLotsCount()
         {
             LotsCount++;
-
         }
 
-        public void DecrementLotsCount()
+        public Result DecrementLotsCount()
         {
             if (LotsCount > 0)
             {
                 LotsCount--;
+                return Result.Success();
             }
+            return Result.Failure("Невозможно уменьшить количество лотов, так как оно уже равно нулю.");
         }
+        
         public Result CanDelete()
         {
             if (LotsCount > 0)
