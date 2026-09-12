@@ -15,6 +15,7 @@ public class Dispute : AggregateRoot<Guid>
     public string Reason { get; private set; } = null!;
     public DateTime CreatedAt { get; private set; }
     public DateTime? ResolvedAt { get; private set; }
+    public byte[] Version { get; private set; } = null!;
 
     private Dispute() { }
 
@@ -56,7 +57,7 @@ public class Dispute : AggregateRoot<Guid>
         {
             return Result.Failure<Dispute>("Нельзя создать спор без причины.");
         }
-
+         
         var dispute = new Dispute(
             Guid.NewGuid(),
             orderId,
