@@ -26,6 +26,9 @@ public class DisputeConfiguration : IEntityTypeConfiguration<Dispute>
         builder.Property(d => d.CreatedAt)
             .IsRequired();
 
+        builder.Property(d => d.Version)
+            .IsRowVersion();
+
         builder.Property(d => d.ResolvedAt)
             .IsRequired(false);
 
