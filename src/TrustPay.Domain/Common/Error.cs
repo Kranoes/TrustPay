@@ -11,9 +11,6 @@
         public static Error Unauthorized(string code, string description) => new(code, description, ErrorType.Unauthorized);
         public static Error Failure(string code, string description) => new(code, description, ErrorType.Failure);
 
-        public static implicit operator Error(string description) =>
-            string.IsNullOrWhiteSpace(description) ? None : Failure("General.Error", description);
-
-        public static implicit operator string(Error error) => error?.Description ?? string.Empty;
+        
     }
 }

@@ -23,10 +23,13 @@ namespace TrustPay.Domain.Common
         public static Result Success() => new(true, Error.None);
 
         public static Result Failure(Error error) => new(false, error);
-        public static Result Failure(string error) => new(false, error);
+        [Obsolete("Используй Result.Failure(Error error) с явным указанием доменной ошибки.")]
+        public static Result Failure(string error) =>
+            new(false, Error.Failure("General.Error", error));
 
         public static Result<T> Success<T>(T value) => Result<T>.Success(value);
         public static Result<T> Failure<T>(Error error) => Result<T>.Failure(error);
+        [Obsolete("Используйте Result.Failure<T>(Error error) с явным указанием доменной ошибки.")]
         public static Result<T> Failure<T>(string error) => Result<T>.Failure(error);
 
         public static implicit operator Result(Error error) => Failure(error);
@@ -49,7 +52,10 @@ namespace TrustPay.Domain.Common
         public static Result<T> Success(T value) => new(value, true, Error.None);
 
         public new static Result<T> Failure(Error error) => new(default, false, error);
-        public new static Result<T> Failure(string error) => new(default, false, error);
+
+        [Obsolete("Используйте Result.Failure(Error error) с явным указанием доменной ошибки.")]
+        public new static Result<T> Failure(string error) =>
+            new(default, false, Error.Failure("General.Error", error));
 
         public static implicit operator Result<T>(T value) => Success(value);
         public static implicit operator Result<T>(Error error) => Failure(error);
