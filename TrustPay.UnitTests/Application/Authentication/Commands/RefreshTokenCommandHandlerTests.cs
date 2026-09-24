@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using NSubstitute;
-using TrustPay.Application.Common.Authentication.Commands.Logout;
 using TrustPay.Application.Common.Authentication.Commands.RefreshToken;
 using TrustPay.Application.Common.Authentication.DTOs;
 using TrustPay.Application.Common.Interfaces;

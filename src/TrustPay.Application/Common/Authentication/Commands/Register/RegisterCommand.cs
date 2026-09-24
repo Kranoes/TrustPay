@@ -34,11 +34,11 @@ namespace TrustPay.Application.Common.Authentication.Commands.Register
             
             if (!await _userRepository.IsEmailUniqueAsync(request.Email,cancellationToken))
             {
-                return Result.Failure<AuthenticationResponse>("Ошибка регистрации: пользователь с таким email уже существует.");
+                return Error.Conflict("User.DuplicateEmail", "Ошибка регистрации: пользователь с таким email уже существует.");
             }
             if (!await _userRepository.IsNickNameUniqueAsync(request.NickName,cancellationToken))
             {
-                return Result.Failure<AuthenticationResponse>("Ошибка регистрации: пользователь с таким никнеймом уже существует.");
+                return Error.Conflict("User.DuplicateNickName", "Ошибка регистрации: пользователь с таким никнеймом уже существует.");
 
             }
             var passwordHash = _passwordHasher.HashPassword(request.Password);
