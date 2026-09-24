@@ -29,12 +29,12 @@ namespace TrustPay.Application.Common.Authentication.Commands.RefreshToken
             var user = await _userRepository.GetByRefreshTokenAsync(request.RefreshToken,cancellationToken);
             if (user is null)
             {
-                return Result.Failure<AuthenticationResponse>("Пользователь с данным токеном не найден.");
+                return Error.NotFound("User.NotFound","Пользователь с данным токеном не найден.");
             }
             var activeRefreshToken = user.RefreshTokens.FirstOrDefault(rt => rt.Token == request.RefreshToken && !rt.IsExpired);
             if (activeRefreshToken is null)
             {
-                return Result.Failure<AuthenticationResponse>("Срок действия Refresh Token истек.");
+                return Error.Unauthorized("Auth.ExpiredToken","Срок действия Refresh Token истек.");
             }
             var newAccessToken = _jwtTokenGenerator.GenerateAccessToken(user);
             var (newRefreshToken,expireAt) = _jwtTokenGenerator.GenerateRefreshToken();
