@@ -19,7 +19,7 @@ services:
       retries: 5
 
   redis:
-    image: redis:7-alpine
+    image: redis/redis-stack-server:latest
     container_name: escrow_redis
     command: redis-server --save 60 1 --loglevel notice
     ports:
