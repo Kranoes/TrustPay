@@ -4,17 +4,21 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using TrustPay.Application.Common.Interfaces;
 using TrustPay.Application.Common.Interfaces.Auth;
+using TrustPay.Application.Common.Interfaces.BloomFilter;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Common.Interfaces.Webhook;
 using TrustPay.Infrastructure.Persistence;
 using TrustPay.Infrastructure.Persistence.Interceptors;
 using TrustPay.Infrastructure.Persistence.Repositories;
 using TrustPay.Infrastructure.Services.Authentication;
+using TrustPay.Infrastructure.Services;
 using TrustPay.Infrastructure.Services.PaymentGateways;
 using TrustPay.Infrastructure.Services.Webhook;
 using TrustPay.Infrastructure.Services.Webhook.Options;
@@ -56,8 +60,11 @@ namespace TrustPay.Infrastructure
                 var interceptor = sp.GetRequiredService<DispatchDomainEventsInterceptor>();
                 options.UseNpgsql(connectionString, npgsqloptions => npgsqloptions.MigrationsAssembly("TrustPay.Infrastructure")).AddInterceptors(interceptor);
             });
+            var multiplixer = ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")!);
+            services.AddSingleton<IConnectionMultiplexer>(multiplixer); 
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+            
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IPaymentSignatureValidator, PaymentSignatureValidator>();
@@ -74,6 +81,9 @@ namespace TrustPay.Infrastructure
             services.AddScoped<ILotRepository, LotRepository>();
             services.AddScoped<ISubCategoryRepository, SubCategoryRepository>();
             services.AddScoped<IDisputeRepository, DisputeRepository>();
+            services.AddScoped<IUserValidationService, UserValidationService>();
+
+            services.AddTransient<StackExchange.Redis.IDatabase>(sp => sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
             return services;
         }
 

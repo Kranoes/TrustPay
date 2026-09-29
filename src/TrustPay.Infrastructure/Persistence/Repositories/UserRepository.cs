@@ -1,6 +1,7 @@
 ﻿namespace TrustPay.Infrastructure.Persistence.Repositories;
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +52,7 @@ public class UserRepository : IUserRepository
                       select user)
                      .FirstOrDefaultAsync(cancellationToken);
     }
+
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
         await _context.Users.AddAsync(user, cancellationToken);
@@ -58,7 +60,7 @@ public class UserRepository : IUserRepository
 
     public void Update(User user)
     {
-        _context.Users.Update(user);
+        _context.Entry(user).State = EntityState.Modified;
     }
 
     public void Delete(User user)
@@ -68,11 +70,15 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> IsEmailUniqueAsync(string email, CancellationToken cancellationToken = default)
     {
-        return !await _context.Users.AnyAsync(u => u.Email == email, cancellationToken);
+        return !await _context.Users
+            .AsNoTracking()
+            .AnyAsync(u => u.Email == email, cancellationToken);
     }
 
     public async Task<bool> IsNickNameUniqueAsync(string nickName, CancellationToken cancellationToken = default)
     {
-        return !await _context.Users.AnyAsync(u => u.Name == nickName, cancellationToken);
+        return !await _context.Users
+            .AsNoTracking()
+            .AnyAsync(u => u.Name == nickName, cancellationToken);
     }
 }

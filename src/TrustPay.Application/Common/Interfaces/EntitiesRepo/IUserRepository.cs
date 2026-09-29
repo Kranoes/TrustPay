@@ -12,8 +12,8 @@ public interface IUserRepository
     Task<User?> GetByWalletIdAsync(Guid walletId, CancellationToken cancellationToken = default);
     Task<User?> GetByIdWithTokensAsync(Guid userId, CancellationToken cancellationToken = default);
     Task AddAsync(User user, CancellationToken cancellationToken = default);
-    Task<bool> IsEmailUniqueAsync(string email, CancellationToken cancellationToken = default);
     Task<bool> IsNickNameUniqueAsync(string nickName, CancellationToken cancellationToken = default);
+    Task<bool> IsEmailUniqueAsync(string nickName, CancellationToken cancellationToken = default);
     Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
     void Update(User user);
     void Delete(User user);
