@@ -3,10 +3,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TrustPay.Application.Common.Authentication.Commands.Login;
 using TrustPay.Application.Common.Authentication.Commands.Logout;
 using TrustPay.Application.Common.Authentication.Commands.RefreshToken;
 using TrustPay.Application.Common.Authentication.Commands.Register;
-using TrustPay.Application.Common.Authentication.Queries.Login;
 
 /// <summary>
 /// Аутентификация и регистрация пользователей
@@ -44,7 +44,7 @@ public class AuthController : ApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Login([FromBody] LoginQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> Login([FromBody] LoginCommand query, CancellationToken cancellationToken)
     {
         var result = await Mediator.Send(query, cancellationToken);
         return HandleResult(result);

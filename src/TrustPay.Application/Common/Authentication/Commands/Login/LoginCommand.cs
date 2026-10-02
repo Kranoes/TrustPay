@@ -8,28 +8,28 @@ using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 
-namespace TrustPay.Application.Common.Authentication.Queries.Login
+namespace TrustPay.Application.Common.Authentication.Commands.Login
 {
-    public record LoginQuery(string Email, string Password) : IRequest<Result<AuthenticationResponse>>;
-    public class LoginQueryHandler : IRequestHandler<LoginQuery, Result<AuthenticationResponse>>
+    public record LoginCommand(string Email, string Password) : IRequest<Result<AuthenticationResponse>>;
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthenticationResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
-        public LoginQueryHandler(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, IUnitOfWork unitOfWork)
+        public LoginCommandHandler(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator, IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _jwtTokenGenerator = jwtTokenGenerator;
             _unitOfWork = unitOfWork;
         }
-        public async Task<Result<AuthenticationResponse>> Handle(LoginQuery request, CancellationToken cancellationToken)
+        public async Task<Result<AuthenticationResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByEmailAsync(request.Email,cancellationToken);
-            if(user is null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
+            if (user is null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
             {
-                return Result<AuthenticationResponse>.Failure("Неверный email или пароль.");
+                return Error.Unauthorized("Auth.InvalidCredentials", "Неверный email или пароль.");
             }
             var token = _jwtTokenGenerator.GenerateAccessToken(user);
             var (refreshToken, expireAt) = _jwtTokenGenerator.GenerateRefreshToken();
