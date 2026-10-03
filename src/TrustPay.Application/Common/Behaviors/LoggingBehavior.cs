@@ -21,12 +21,20 @@ namespace TrustPay.Application.Common.Behaviors
             CancellationToken cancellationToken)
         {
             var requestName = typeof(TRequest).Name;
+            var timer = System.Diagnostics.Stopwatch.StartNew();
 
-            _logger.LogInformation("Старт обработки запроса: {RequestName} {@Request}", requestName, request);
+            _logger.LogInformation("Старт обработки запроса: {RequestName} ", requestName);
 
             var response = await next();
-
-            _logger.LogInformation("Запрос {RequestName} успешно обработан", requestName);
+            timer.Stop();
+            if (timer.ElapsedMilliseconds > 500)
+            {
+                _logger.LogWarning("Обработка запроса {RequestName} заняла {ElapsedMilliseconds} мс", requestName, timer.ElapsedMilliseconds);
+            }
+            else 
+            {
+            _logger.LogInformation("Запрос {RequestName} успешно обработан за {ElapsedMilliseconds} мс", requestName, timer.ElapsedMilliseconds);
+            }
 
             return response;
         }

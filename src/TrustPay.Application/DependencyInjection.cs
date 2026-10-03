@@ -17,6 +17,7 @@ namespace TrustPay.Application
             services.AddMediatR(cfg =>
                 {
                 cfg.RegisterServicesFromAssembly(assembly);
+                    cfg.AddOpenBehavior(typeof(UnhandledExceptionBehavior<,>));
                     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
                     cfg.AddOpenBehavior(typeof(PerformanceBehavior<,>));
                     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));

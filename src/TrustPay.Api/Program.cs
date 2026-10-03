@@ -9,47 +9,55 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
+
 builder.Services.AddControllers();
+
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
-    var securityScheme = new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Введите JWT токен"
-    };
-    document.Components ??= new OpenApiComponents();
-    document.Components.SecuritySchemes ??= new Dictionary<string,IOpenApiSecurityScheme>();
-    document.Components.SecuritySchemes["Bearer"] = securityScheme;
-    var securityRequirement = new OpenApiSecurityRequirement
-    {
-        [new OpenApiSecuritySchemeReference("Bearer",document)] = new List<string>()
-    };
+        var securityScheme = new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Введите JWT токен"
+        };
+
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes["Bearer"] = securityScheme;
+
+        var securityRequirement = new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
+        };
+
         document.Security ??= new List<OpenApiSecurityRequirement>();
         document.Security.Add(securityRequirement);
-    return Task.CompletedTask;
+
+        return Task.CompletedTask;
     });
 });
-
-    
-
-  
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    await DbInitializer.SeedAsync(app.Services);
+    using (var scope = app.Services.CreateScope())
+    {
+        await DbInitializer.SeedAsync(scope.ServiceProvider);
+    }
+
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
