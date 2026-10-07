@@ -10,6 +10,7 @@ namespace TrustPay.Domain.Entities
     public class User : AggregateRoot<Guid>
     {
         public string Name { get; private set; } = null!;
+        
         public string Email { get; private set; } = null!;
         public double AvgRating { get; private set; }
         public string PasswordHash { get; private set; } = null!;

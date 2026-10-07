@@ -28,6 +28,7 @@ namespace TrustPay.Domain.Common
     public abstract class AggregateRoot<TId> : AggregateRoot
     where TId : notnull
     {
+        
         public TId Id { get; protected set; }
 
         protected AggregateRoot(TId id) => Id = id;

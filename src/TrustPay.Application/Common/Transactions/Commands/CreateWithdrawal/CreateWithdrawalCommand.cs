@@ -1,5 +1,9 @@
-﻿using MediatR;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Common.Transactions.DTOs;
 using TrustPay.Domain.Common;
@@ -13,13 +17,19 @@ namespace TrustPay.Application.Common.Transactions.Commands.CreateWithdrawal
     public class CreateWithdrawalCommandHandler : IRequestHandler<CreateWithdrawalCommand, Result<WithdrawalResponse>>
     {
         private readonly ITransactionRepository _transactionRepository;
+        private readonly IWalletRepository _walletRepository;
+        private readonly ICurrentUserService _currentUserService;
         private readonly IUnitOfWork _unitOfWork;
 
         public CreateWithdrawalCommandHandler(
             ITransactionRepository transactionRepository,
+            IWalletRepository walletRepository,
+            ICurrentUserService currentUserService,
             IUnitOfWork unitOfWork)
         {
             _transactionRepository = transactionRepository;
+            _walletRepository = walletRepository;
+            _currentUserService = currentUserService;
             _unitOfWork = unitOfWork;
         }
 
@@ -27,6 +37,19 @@ namespace TrustPay.Application.Common.Transactions.Commands.CreateWithdrawal
             CreateWithdrawalCommand command,
             CancellationToken cancellationToken)
         {
+            var wallet = await _walletRepository.GetByIdAsync(command.SenderWalletId, cancellationToken);
+            if (wallet is null)
+            {
+                return Result.Failure<WithdrawalResponse>(
+                    Error.NotFound("Wallet.NotFound", "Кошелек отправителя не найден."));
+            }
+
+            if (wallet.UserId != _currentUserService.UserId)
+            {
+                return Result.Failure<WithdrawalResponse>(
+                    Error.Forbidden("Wallet.AccessDenied", "У вас нет прав на совершение операций с этим кошельком."));
+            }
+
             var transactionResult = Transaction.CreateWithdrawal(
                 command.SenderWalletId,
                 command.Amount);

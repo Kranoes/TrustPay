@@ -13,7 +13,6 @@ namespace TrustPay.Domain.Entities
         public Money AvailableBalance { get; private set; } = null!;
         public Money LockedBalance { get; private set; } = null!;
         public uint Version { get; private set; }
-        
 
         private Wallet() { }
 
@@ -23,24 +22,27 @@ namespace TrustPay.Domain.Entities
             UserId = userId;
             Status = WalletStatus.Active;
             AvailableBalance = initialBalance;
-            LockedBalance = Money.Zero(initialBalance.Currency);
+            LockedBalance = Money.Zero(initialBalance.Currency).Value;
         }
 
         public static Result<Wallet> Create(Guid userId, Money initialBalance)
         {
             if (userId == Guid.Empty)
             {
-                return Result.Failure<Wallet>("Идентификатор пользователя не может быть пустым.");
+                return Result.Failure<Wallet>(
+                    Error.Validation("Wallet.EmptyUserId", "Идентификатор пользователя не может быть пустым."));
             }
 
             if (initialBalance is null)
             {
-                return Result.Failure<Wallet>("Начальный баланс не может быть null.");
+                return Result.Failure<Wallet>(
+                    Error.Validation("Wallet.NullBalance", "Начальный баланс не может быть null."));
             }
 
             if (initialBalance.Amount < 0)
             {
-                return Result.Failure<Wallet>("Начальный баланс не может быть отрицательным.");
+                return Result.Failure<Wallet>(
+                    Error.Validation("Wallet.NegativeBalance", "Начальный баланс не может быть отрицательным."));
             }
 
             var wallet = new Wallet(Guid.NewGuid(), userId, initialBalance);
@@ -132,7 +134,8 @@ namespace TrustPay.Domain.Entities
             var lockedSubtractResult = LockedBalance.Subtract(amount);
             if (lockedSubtractResult.IsFailure)
             {
-                return Result.Failure("Недостаточно замороженных средств для разблокировки.");
+                return Result.Failure(
+                    Error.Validation("Wallet.InsufficientLockedFunds", "Недостаточно замороженных средств для разблокировки."));
             }
 
             LockedBalance = lockedSubtractResult.Value;
@@ -154,7 +157,8 @@ namespace TrustPay.Domain.Entities
             var lockedSubtractResult = LockedBalance.Subtract(amount);
             if (lockedSubtractResult.IsFailure)
             {
-                return Result.Failure("Недостаточно замороженных средств для подтверждения оплаты.");
+                return Result.Failure(
+                    Error.Validation("Wallet.InsufficientLockedFunds", "Недостаточно замороженных средств для подтверждения оплаты."));
             }
 
             LockedBalance = lockedSubtractResult.Value;
@@ -168,12 +172,14 @@ namespace TrustPay.Domain.Entities
         {
             if (Status == WalletStatus.Frozen)
             {
-                return Result.Failure("Кошелек уже заморожен.");
+                return Result.Failure(
+                    Error.Conflict("Wallet.AlreadyFrozen", "Кошелек уже заморожен."));
             }
 
             if (Status == WalletStatus.Closed)
             {
-                return Result.Failure("Нельзя заморозить закрытый кошелек.");
+                return Result.Failure(
+                    Error.Conflict("Wallet.Closed", "Нельзя заморозить закрытый кошелек."));
             }
 
             var oldStatus = Status;
@@ -188,7 +194,8 @@ namespace TrustPay.Domain.Entities
         {
             if (Status != WalletStatus.Frozen)
             {
-                return Result.Failure("Разморозить можно только замороженный кошелек.");
+                return Result.Failure(
+                    Error.Conflict("Wallet.NotFrozen", "Разморозить можно только замороженный кошелек."));
             }
 
             var oldStatus = Status;
@@ -203,12 +210,14 @@ namespace TrustPay.Domain.Entities
         {
             if (Status == WalletStatus.Closed)
             {
-                return Result.Failure("Кошелек уже закрыт.");
+                return Result.Failure(
+                    Error.Conflict("Wallet.AlreadyClosed", "Кошелек уже закрыт."));
             }
 
             if (AvailableBalance.Amount != 0 || LockedBalance.Amount != 0)
             {
-                return Result.Failure("Нельзя закрыть кошелек с ненулевым балансом.");
+                return Result.Failure(
+                    Error.Validation("Wallet.NonZeroBalance", "Нельзя закрыть кошелек с ненулевым балансом."));
             }
 
             var oldStatus = Status;
@@ -223,17 +232,20 @@ namespace TrustPay.Domain.Entities
         {
             if (Status != WalletStatus.Active)
             {
-                return Result.Failure($"Операция невозможна: кошелек находится в статусе '{Status}'.");
+                return Result.Failure(
+                    Error.Conflict("Wallet.InactiveStatus", $"Операция невозможна: кошелек находится в статусе '{Status}'."));
             }
 
             if (amount is null || amount.Amount <= 0)
             {
-                return Result.Failure("Сумма операции должна быть больше нуля.");
+                return Result.Failure(
+                    Error.Validation("Wallet.InvalidAmount", "Сумма операции должна быть больше нуля."));
             }
 
             if (!IsSameCurrency(amount))
             {
-                return Result.Failure($"Несовпадение валют. Валюта кошелька: '{AvailableBalance.Currency}', передано: '{amount.Currency}'.");
+                return Result.Failure(
+                    Error.Validation("Wallet.CurrencyMismatch", $"Несовпадение валют. Валюта кошелька: '{AvailableBalance.Currency}', передано: '{amount.Currency}'."));
             }
 
             return Result.Success();

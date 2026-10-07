@@ -10,7 +10,7 @@ namespace TrustPay.Domain.Entities
     {
         public Guid? SenderWalletId { get; private set; }
         public Guid? ReceiverWalletId { get; private set; }
-        public Money Amount { get; private set; }
+        public Money Amount { get; private set; } = null!;
         public TransactionType Type { get; private set; }
         public TransactionStatus Status { get; private set; }
         public DateTime CreatedAt { get; private set; }
@@ -44,22 +44,26 @@ namespace TrustPay.Domain.Entities
         {
             if (senderWalletId == Guid.Empty)
             {
-                return Result.Failure<Transaction>("Идентификатор кошелька отправителя не может быть пустым.");
+                return Result.Failure<Transaction>(
+                    Error.Validation("Transaction.EmptySenderWallet", "Идентификатор кошелька отправителя не может быть пустым."));
             }
 
             if (receiverWalletId == Guid.Empty)
             {
-                return Result.Failure<Transaction>("Идентификатор кошелька получателя не может быть пустым.");
+                return Result.Failure<Transaction>(
+                    Error.Validation("Transaction.EmptyReceiverWallet", "Идентификатор кошелька получателя не может быть пустым."));
             }
 
             if (senderWalletId == receiverWalletId)
             {
-                return Result.Failure<Transaction>("Нельзя совершить перевод на один и тот же кошелек.");
+                return Result.Failure<Transaction>(
+                    Error.Validation("Transaction.SameWallet", "Нельзя совершить перевод на один и тот же кошелек."));
             }
 
-            if (amount == null || amount.Amount <= 0)
+            if (amount is null || amount.Amount <= 0)
             {
-                return Result.Failure<Transaction>("Сумма перевода должна быть больше нуля.");
+                return Result.Failure<Transaction>(
+                    Error.Validation("Transaction.InvalidAmount", "Сумма перевода должна быть больше нуля."));
             }
 
             var transaction = new Transaction(
@@ -77,70 +81,81 @@ namespace TrustPay.Domain.Entities
 
             return Result.Success(transaction);
         }
-        public static Result<Transaction> CreateDeposit(Guid receiverWalletId,Money amount)
+
+        public static Result<Transaction> CreateDeposit(Guid receiverWalletId, Money amount)
         {
             if (receiverWalletId == Guid.Empty)
             {
-                return Result<Transaction>.Failure("Некорректный ID кошелька.");
+                return Result.Failure<Transaction>(
+                    Error.Validation("Transaction.EmptyReceiverWallet", "Некорректный ID кошелька."));
             }
+
             if (amount is null || amount.Amount <= 0)
             {
-                return Result<Transaction>.Failure("Некорректная сумма депозита.");
+                return Result.Failure<Transaction>(
+                    Error.Validation("Transaction.InvalidAmount", "Некорректная сумма депозита."));
             }
-            
+
             var transaction = new Transaction(
-            
-                 Guid.NewGuid(),
-                 null,
-                 receiverWalletId,
-                 amount,
-                 TransactionType.Deposit
-            );
+                Guid.NewGuid(),
+                null,
+                receiverWalletId,
+                amount,
+                TransactionType.Deposit);
+
             transaction.AddDomainEvent(new TransactionCreatedDomainEvent(
                 transaction.Id,
                 null,
                 transaction.ReceiverWalletId,
-                transaction.Amount
-                ));
-            return Result.Success(transaction);
+                transaction.Amount));
 
+            return Result.Success(transaction);
         }
-        public static Result<Transaction> CreateWithdrawal(Guid senderWalletId,Money amount)
+
+        public static Result<Transaction> CreateWithdrawal(Guid senderWalletId, Money amount)
         {
             if (senderWalletId == Guid.Empty)
             {
-                return Result.Failure<Transaction>("Некорректный ID.");
+                return Result.Failure<Transaction>(
+                    Error.Validation("Transaction.EmptySenderWallet", "Некорректный ID кошелька."));
             }
+
             if (amount is null || amount.Amount <= 0)
             {
-                return Result.Failure<Transaction>("Некорректная сумма вывода.");
+                return Result.Failure<Transaction>(
+                    Error.Validation("Transaction.InvalidAmount", "Некорректная сумма вывода."));
             }
+
             var transaction = new Transaction(
                 Guid.NewGuid(),
                 senderWalletId,
                 null,
                 amount,
-                TransactionType.Withdrawal
-                );
+                TransactionType.Withdrawal);
+
             transaction.AddDomainEvent(new TransactionCreatedDomainEvent(
-                 transaction.Id,
-                 transaction.SenderWalletId,
-                 null,
-                 transaction.Amount
-                ));
+                transaction.Id,
+                transaction.SenderWalletId,
+                null,
+                transaction.Amount));
+
             return Result.Success(transaction);
         }
-        public Result Complete(string? paymentSource,Guid? walletId,Money amount)
+
+        public Result Complete(string? paymentSource, Guid? walletId, Money amount)
         {
             if (Status != TransactionStatus.Pending)
             {
-                return Result.Failure($"Нельзя завершить транзакцию со статусом '{Status}'.");
+                return Result.Failure(
+                    Error.Conflict("Transaction.InvalidStatus", $"Нельзя завершить транзакцию со статусом '{Status}'."));
             }
 
             Status = TransactionStatus.Completed;
             CompletedAt = DateTime.UtcNow;
             PaymentSource = paymentSource;
-            AddDomainEvent(new TransactionCompletedDomainEvent(Id,walletId,amount,paymentSource));
+
+            AddDomainEvent(new TransactionCompletedDomainEvent(Id, walletId, amount, paymentSource));
+
             return Result.Success();
         }
 
@@ -148,29 +163,35 @@ namespace TrustPay.Domain.Entities
         {
             if (Status != TransactionStatus.Pending)
             {
-                return Result.Failure($"Нельзя перевести в статус 'Ошибка' транзакцию со статусом '{Status}'.");
+                return Result.Failure(
+                    Error.Conflict("Transaction.InvalidStatus", $"Нельзя перевести в статус 'Ошибка' транзакцию со статусом '{Status}'."));
             }
 
             if (string.IsNullOrWhiteSpace(errorMessage))
             {
-                return Result.Failure("Сообщение об ошибке не может быть пустым.");
+                return Result.Failure(
+                    Error.Validation("Transaction.EmptyErrorMessage", "Сообщение об ошибке не может быть пустым."));
             }
 
             Status = TransactionStatus.Failed;
             ErrorMessage = errorMessage;
 
             AddDomainEvent(new TransactionFailedDomainEvent(Id, errorMessage));
+
             return Result.Success();
         }
+
         public Result SetExternalPaymentId(string externalPaymentId)
         {
             if (string.IsNullOrWhiteSpace(externalPaymentId))
             {
-                return Result.Failure("Внешний ID платежа не может быть пустым.");
+                return Result.Failure(
+                    Error.Validation("Transaction.EmptyExternalPaymentId", "Внешний ID платежа не может быть пустым."));
             }
+
             ExternalPaymentId = externalPaymentId;
+
             return Result.Success();
         }
-
     }
 }
