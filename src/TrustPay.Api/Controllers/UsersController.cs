@@ -7,6 +7,7 @@ using TrustPay.Application.Users.Commands.ChangeUserRole;
 using TrustPay.Application.Users.Commands.CreateUser;
 using TrustPay.Application.Users.Commands.UpdateUserProfile;
 using TrustPay.Application.Users.DTO;
+using TrustPay.Application.Users.Queries.GetPublicUserProfile;
 using TrustPay.Application.Users.Queries.GetUserByEmail;
 using TrustPay.Application.Users.Queries.GetUserById;
 using TrustPay.Domain.Enums;
@@ -42,11 +43,29 @@ public class UsersController : ApiController
     }
 
     /// <summary>
-    /// Получить пользователя по ID
+    /// Получить публичный профиль пользователя (никнейм, рейтинг, дата регистрации)
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("{id:guid}/public")]
+    [ProducesResponseType(typeof(PublicUserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPublicProfile(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetPublicUserProfileQuery(id);
+        var result = await Mediator.Send(query, cancellationToken);
+
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// Получить полный профиль пользователя по ID (только владелец или администратор)
     /// </summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(
         [FromRoute] Guid id,
