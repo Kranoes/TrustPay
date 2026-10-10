@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MediatR;
 using TrustPay.Application.Common.Interfaces;
 using TrustPay.Application.Common.Interfaces.BloomFilter;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 
@@ -20,19 +21,27 @@ public class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfile
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserValidationService _userValidationService;
+    private readonly ICurrentUserService _currentUserService;
 
     public UpdateUserProfileCommandHandler(
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
-        IUserValidationService userValidationService)
+        IUserValidationService userValidationService,
+        ICurrentUserService currentUserService)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _userValidationService = userValidationService;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
     {
+        if (request.UserId != _currentUserService.UserId && !_currentUserService.IsAdmin)
+        {
+            return Error.Forbidden("User.Forbidden", "Вы не можете изменять профиль другого пользователя.");
+        }
+
         var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
         if (user is null)
         {

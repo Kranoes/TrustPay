@@ -10,11 +10,11 @@ using TrustPay.Infrastructure;
 
 #nullable disable
 
-namespace TrustPay.Infrastructure.Persistence.Migrations
+namespace TrustPay.Infrastructure.Migrations
 {
     [DbContext(typeof(TrustPayDbContext))]
-    [Migration("20260921173808_UpdateDisputeEntity")]
-    partial class UpdateDisputeEntity
+    [Migration("20260819075806_AddExternalPaymentIdToTransaction")]
+    partial class AddExternalPaymentIdToTransaction
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,12 +102,6 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
 
                     b.HasKey("Id");
 
@@ -202,10 +196,8 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
@@ -250,9 +242,6 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("ExpireAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("text");
@@ -273,9 +262,6 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -290,9 +276,6 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("TargetUserId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -300,12 +283,8 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AuthorId");
-
                     b.HasIndex("OrderId")
                         .IsUnique();
-
-                    b.HasIndex("TargetUserId");
 
                     b.ToTable("Reviews");
                 });
@@ -398,7 +377,7 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("SenderWalletId");
 
-                    b.ToTable("transactions", (string)null);
+                    b.ToTable("Transactions", (string)null);
                 });
 
             modelBuilder.Entity("TrustPay.Domain.Entities.User", b =>
@@ -584,21 +563,9 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("TrustPay.Domain.Entities.Review", b =>
                 {
-                    b.HasOne("TrustPay.Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("TrustPay.Domain.Entities.Order", null)
                         .WithOne()
                         .HasForeignKey("TrustPay.Domain.Entities.Review", "OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TrustPay.Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("TargetUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -642,13 +609,22 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("TransactionId");
 
-                            b1.ToTable("transactions");
+                            b1.ToTable("Transactions");
 
                             b1.WithOwner()
                                 .HasForeignKey("TransactionId");
                         });
 
                     b.Navigation("Amount")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TrustPay.Domain.Entities.Wallet", b =>
+                {
+                    b.HasOne("TrustPay.Domain.Entities.User", null)
+                        .WithOne()
+                        .HasForeignKey("TrustPay.Domain.Entities.Wallet", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

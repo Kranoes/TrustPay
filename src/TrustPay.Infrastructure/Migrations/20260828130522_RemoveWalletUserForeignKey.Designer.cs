@@ -10,11 +10,11 @@ using TrustPay.Infrastructure;
 
 #nullable disable
 
-namespace TrustPay.Infrastructure.Persistence.Migrations
+namespace TrustPay.Infrastructure.Migrations
 {
     [DbContext(typeof(TrustPayDbContext))]
-    [Migration("20260929094508_BloomFilterMigration")]
-    partial class BloomFilterMigration
+    [Migration("20260828130522_RemoveWalletUserForeignKey")]
+    partial class RemoveWalletUserForeignKey
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,12 +102,6 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
 
                     b.HasKey("Id");
 
@@ -248,9 +242,6 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ExpireAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Token")
@@ -419,9 +410,6 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("citext");
-
-                    b.Property<DateTime?>("LastNickNameChangedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()

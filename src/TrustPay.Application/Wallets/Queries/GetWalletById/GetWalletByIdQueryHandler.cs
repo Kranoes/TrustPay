@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using MediatR;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Enums;
@@ -13,9 +14,11 @@ public record GetWalletByIdQuery(Guid WalletId) : IRequest<Result<WalletResponse
 public class GetWalletByIdQueryHandler : IRequestHandler<GetWalletByIdQuery, Result<WalletResponse>>
     {
         private readonly IWalletRepository _walletRepository;
-        public GetWalletByIdQueryHandler(IWalletRepository walletRepository)
+        private readonly ICurrentUserService _currentUserService;
+        public GetWalletByIdQueryHandler(IWalletRepository walletRepository, ICurrentUserService currentUserService)
         {
             _walletRepository = walletRepository;
+            _currentUserService = currentUserService;
         }
         public async Task<Result<WalletResponse>> Handle(GetWalletByIdQuery request, CancellationToken cancellationToken)
         {
@@ -24,6 +27,11 @@ public class GetWalletByIdQueryHandler : IRequestHandler<GetWalletByIdQuery, Res
             {
                 return Result.Failure<WalletResponse>($"Кошелек с ID {request.WalletId} не найден.");
 
+            }
+
+            if (wallet.UserId != _currentUserService.UserId && !_currentUserService.IsAdmin)
+            {
+                return Error.Forbidden("Wallet.Forbidden", "У вас нет прав на просмотр данного кошелька.");
             }
 
             var response = new WalletResponse(wallet.Id, wallet.UserId, wallet.AvailableBalance.Amount, wallet.AvailableBalance.Currency);

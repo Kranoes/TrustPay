@@ -2,6 +2,7 @@
 
 using FluentValidation;
 using MediatR;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Users.DTO;
 using TrustPay.Application.Users.Queries;
@@ -12,10 +13,12 @@ public record GetUserByWalletIdQuery(Guid WalletId) : IRequest<Result<UserRespon
 public class GetUserByWalletIdQueryHandler : IRequestHandler<GetUserByWalletIdQuery, Result<UserResponse>>
 {
     private readonly IUserRepository _userRepository;
+    private readonly ICurrentUserService _currentUserService;
 
-    public GetUserByWalletIdQueryHandler(IUserRepository userRepository)
+    public GetUserByWalletIdQueryHandler(IUserRepository userRepository, ICurrentUserService currentUserService)
     {
         _userRepository = userRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<UserResponse>> Handle(GetUserByWalletIdQuery request, CancellationToken cancellationToken)
@@ -24,6 +27,11 @@ public class GetUserByWalletIdQueryHandler : IRequestHandler<GetUserByWalletIdQu
         if (user is null)
         {
             return Error.NotFound("User.NotFoundByWallet", $"Пользователь для кошелька с ID '{request.WalletId}' не найден.");
+        }
+
+        if (user.Id != _currentUserService.UserId && !_currentUserService.IsAdmin)
+        {
+            return Error.Forbidden("User.Forbidden", "Нет прав на просмотр владельца этого кошелька.");
         }
 
         var response = new UserResponse(

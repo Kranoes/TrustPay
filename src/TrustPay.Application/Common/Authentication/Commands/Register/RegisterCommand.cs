@@ -9,13 +9,14 @@ using TrustPay.Application.Common.Interfaces;
 using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.BloomFilter;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
+using TrustPay.Application.Common.Logging;
 using TrustPay.Domain.Common;
 using TrustPay.Domain.Entities;
 
 public record RegisterCommand(
     string NickName,
-    string Email,
-    string Password
+    [property:Sensitive]string Email,
+    [property:Sensitive]string Password
 ) : IRequest<Result<AuthenticationResponse>>;
 
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<AuthenticationResponse>>

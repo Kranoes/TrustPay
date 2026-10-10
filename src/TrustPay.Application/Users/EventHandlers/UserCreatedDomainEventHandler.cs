@@ -33,7 +33,7 @@ namespace TrustPay.Application.Users.EventHandlers
         {
             var userEvent = notification.DomainEvent;
             var amount = Money.Zero("RUB");
-            var walletResult = Wallet.Create(userEvent.UserId, amount);
+            var walletResult = Wallet.Create(userEvent.UserId, amount.Value);
             if (walletResult.IsFailure)
             {
                 _logger.LogError("Failed to create wallet for user {UserId}. Error: {Error}",

@@ -62,9 +62,11 @@ public class UsersController : ApiController
     /// Найти пользователя по Email
     /// </summary>
     [HttpGet]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByEmail(
         [FromQuery] string email,
