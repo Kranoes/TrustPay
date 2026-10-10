@@ -10,11 +10,11 @@ using TrustPay.Infrastructure;
 
 #nullable disable
 
-namespace TrustPay.Infrastructure.Persistence.Migrations
+namespace TrustPay.Infrastructure.Migrations
 {
     [DbContext(typeof(TrustPayDbContext))]
-    [Migration("20260828130522_RemoveWalletUserForeignKey")]
-    partial class RemoveWalletUserForeignKey
+    [Migration("20260921173808_UpdateDisputeEntity")]
+    partial class UpdateDisputeEntity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,6 +102,12 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
 
                     b.HasKey("Id");
 
@@ -242,6 +248,9 @@ namespace TrustPay.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ExpireAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Token")

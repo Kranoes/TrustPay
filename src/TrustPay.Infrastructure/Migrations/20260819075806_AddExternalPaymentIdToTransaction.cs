@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TrustPay.Infrastructure.Persistence.Migrations
+namespace TrustPay.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class AddExternalPaymentIdToTransaction : Migration

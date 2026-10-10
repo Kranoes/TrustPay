@@ -3,27 +3,26 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: escrow_postgres
+    container_name: trustpay_postgres
     environment:
-      POSTGRES_DB: escrow_db
-      POSTGRES_USER: escrow_user
-      POSTGRES_PASSWORD: escrow_password
+      POSTGRES_DB: trustpay_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U escrow_user -d escrow_db"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trustpay_db"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis/redis-stack-server:latest
-    container_name: escrow_redis
-    command: redis-server --save 60 1 --loglevel notice
+    container_name: trustpay_redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:

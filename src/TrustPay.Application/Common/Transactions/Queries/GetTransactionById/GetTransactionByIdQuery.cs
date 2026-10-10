@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TrustPay.Application.Common.Interfaces;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Transactions.DTOs;
 using TrustPay.Domain.Common;
 
@@ -10,10 +11,12 @@ public record GetTransactionByIdQuery(Guid TransactionId) : IRequest<Result<Tran
     public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionByIdQuery, Result<TransactionResponse>>
 {
 private readonly ITrustPayDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public GetTransactionByIdQueryHandler(ITrustPayDbContext context)
+    public GetTransactionByIdQueryHandler(ITrustPayDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<TransactionResponse>> Handle(
@@ -28,6 +31,22 @@ private readonly ITrustPayDbContext _context;
         {
             return Result.Failure<TransactionResponse>(
                 Error.NotFound("Transaction.NotFound", $"Транзакция с ID '{request.TransactionId}' не найдена."));
+        }
+
+        if (!_currentUserService.IsAdmin)
+        {
+            var currentUserId = _currentUserService.UserId;
+            var ownsWallet = await _context.Wallets
+                .AsNoTracking()
+                .AnyAsync(w => w.UserId == currentUserId
+                    && (w.Id == transaction.SenderWalletId || w.Id == transaction.ReceiverWalletId),
+                    cancellationToken);
+
+            if (!ownsWallet)
+            {
+                return Result.Failure<TransactionResponse>(
+                    Error.Forbidden("Transaction.Forbidden", "У вас нет прав на просмотр данной транзакции."));
+            }
         }
 
         var response = new TransactionResponse(

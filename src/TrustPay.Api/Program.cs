@@ -1,12 +1,19 @@
-using System.Reflection;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
+using Serilog;
+using TrustPay.Api.Logging;
 using TrustPay.Application;
+using TrustPay.Application.Common.Authentication.Commands.Login;
 using TrustPay.Infrastructure;
 using TrustPay.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration.ReadFrom.Configuration(context.Configuration);
+    configuration.WriteTo.Console();
+    configuration.Destructure.With<SensitiveDestructuringPolicy>();
+});
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
@@ -46,7 +53,6 @@ builder.Services.AddOpenApi(options =>
 });
 
 var app = builder.Build();
-
 if (app.Environment.IsDevelopment())
 {
     using (var scope = app.Services.CreateScope())

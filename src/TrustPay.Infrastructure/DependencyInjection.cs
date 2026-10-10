@@ -34,6 +34,13 @@ namespace TrustPay.Infrastructure
             services.Configure<BankOptions>(configuration.GetSection(BankOptions.SectionName));
             var jwtSettings = new JwtSettings();
             configuration.Bind(JwtSettings.SectionName, jwtSettings);
+            if (string.IsNullOrWhiteSpace(jwtSettings.Secret) || jwtSettings.Secret.Length < 32)
+            {
+                throw new InvalidOperationException(
+                    "JwtSettings:Secret is not set or shorter than 32 characters. " +
+                    "Development: dotnet user-secrets set \"JwtSettings:Secret\" <value> --project src/TrustPay.Api. " +
+                    "Production: environment variable JwtSettings__Secret.");
+            }
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
             services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
                 {
@@ -54,14 +61,14 @@ namespace TrustPay.Infrastructure
             services.AddAuthorization();
             services.AddScoped<DispatchDomainEventsInterceptor>();
             var connectionString = configuration.GetConnectionString("DefaultConnection") 
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found. Development: dotnet user-secrets set \"ConnectionStrings:DefaultConnection\" <value> --project src/TrustPay.Api. Production: environment variable ConnectionStrings__DefaultConnection.");
             services.AddDbContext<TrustPayDbContext>((sp,options )=>
             {
                 var interceptor = sp.GetRequiredService<DispatchDomainEventsInterceptor>();
                 options.UseNpgsql(connectionString, npgsqloptions => npgsqloptions.MigrationsAssembly("TrustPay.Infrastructure")).AddInterceptors(interceptor);
             });
-            var multiplixer = ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")!);
-            services.AddSingleton<IConnectionMultiplexer>(multiplixer); 
+            var multiplexer = ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")!); 
+            services.AddSingleton<IConnectionMultiplexer>(multiplexer); 
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
             

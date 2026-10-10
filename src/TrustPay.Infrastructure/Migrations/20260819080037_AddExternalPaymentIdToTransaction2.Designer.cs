@@ -10,7 +10,7 @@ using TrustPay.Infrastructure;
 
 #nullable disable
 
-namespace TrustPay.Infrastructure.Persistence.Migrations
+namespace TrustPay.Infrastructure.Migrations
 {
     [DbContext(typeof(TrustPayDbContext))]
     [Migration("20260819080037_AddExternalPaymentIdToTransaction2")]

@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using MediatR;
 using TrustPay.Application.Common.Authentication.DTOs;
 using TrustPay.Application.Common.Interfaces;
 using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
+using TrustPay.Application.Common.Logging;
 using TrustPay.Domain.Common;
 
 namespace TrustPay.Application.Common.Authentication.Commands.RefreshToken
 {
-    public record RefreshTokenCommand(string RefreshToken) : IRequest<Result<AuthenticationResponse>>;
+    public record RefreshTokenCommand([property:Sensitive]string RefreshToken) : IRequest<Result<AuthenticationResponse>>;
     public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<AuthenticationResponse>>
     {
         private readonly IJwtTokenGenerator _jwtTokenGenerator;

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
 using TrustPay.Application.Common.Models;
 using TrustPay.Application.Common.Transactions.DTOs;
@@ -12,13 +13,16 @@ public class GetWalletTransactionsQueryHandler
 {
     private readonly ITransactionRepository _transactionRepository;
     private readonly IWalletRepository _walletRepository;
+    private readonly ICurrentUserService _currentUserService;
 
     public GetWalletTransactionsQueryHandler(
         ITransactionRepository transactionRepository,
-        IWalletRepository walletRepository)
+        IWalletRepository walletRepository,
+        ICurrentUserService currentUserService)
     {
         _transactionRepository = transactionRepository;
         _walletRepository = walletRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<PageResult<TransactionResponse>>> Handle(
@@ -29,6 +33,12 @@ public class GetWalletTransactionsQueryHandler
         if (wallet is null)
         {
             return Result.Failure<PageResult<TransactionResponse>>("Кошелек не найден.");
+        }
+
+        if (wallet.UserId != _currentUserService.UserId && !_currentUserService.IsAdmin)
+        {
+            return Result.Failure<PageResult<TransactionResponse>>(
+                Error.Forbidden("Wallet.Forbidden", "У вас нет прав на просмотр транзакций данного кошелька."));
         }
 
         var (items, totalCount) = await _transactionRepository.GetPagedByWalletIdAsync(
