@@ -79,6 +79,7 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands.Login
             var password = "ValidPassword2%";
             var expectedAccessToken= "mocked_access_token";
             var expectedRefreshToken = "mocked_refresh_token";
+            var tokenHash = "mocked_token_hash";
             var command = new LoginCommand(email, password);
             var user = CreateTestUser(email);
 
@@ -87,7 +88,7 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands.Login
             _passwordHasherMock.VerifyPassword(password, user.PasswordHash)
                 .Returns(true);
             _jwtTokenGeneratorMock.GenerateAccessToken(user).Returns(expectedAccessToken);
-            _jwtTokenGeneratorMock.GenerateRefreshToken().Returns((expectedRefreshToken, DateTime.UtcNow.AddDays(7)));
+            _jwtTokenGeneratorMock.GenerateRefreshToken().Returns((expectedRefreshToken, tokenHash, DateTime.UtcNow.AddDays(7)));
 
             var result = await _handler.Handle(command, CancellationToken.None);
 

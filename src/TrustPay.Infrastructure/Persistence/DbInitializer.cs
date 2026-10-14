@@ -21,15 +21,15 @@ public static class DbInitializer
         {
             return;
         }
-        if(string.IsNullOrEmpty(configuration.GetValue<string>("Admin:Email")) || string.IsNullOrEmpty(configuration.GetValue<string>("Admin:Password")))
+        var adminEmail = configuration.GetValue<string>("Admin:Email");
+        var password = configuration.GetValue<string>("Admin:Password");
+        if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(password))
         {
             logger.LogWarning("Admin is not seeded: set Admin:Email and Admin:Password.");
             return;
 
         }
-        var adminEmail = configuration.GetValue<string>("Admin:Email");
-
-        var passwordHash = passwordHasher.HashPassword(configuration.GetValue<string>("Admin:Password")!);
+        var passwordHash = passwordHasher.HashPassword(password!);
         var adminResult = User.Create(adminEmail, "Admin", passwordHash, UserRole.Admin);
         if (adminResult.IsSuccess)
         {
@@ -38,7 +38,7 @@ public static class DbInitializer
         }
         else 
         {
-            logger.LogError("Failed to create admin user.");
+            logger.LogError("Failed to create admin user.Code: {ErrorCode} ).Description: {ErrorDescription}", adminResult.Error.Code, adminResult.Error.Description);
             return;
         }
         

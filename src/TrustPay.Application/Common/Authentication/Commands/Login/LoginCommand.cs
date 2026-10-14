@@ -34,8 +34,8 @@ namespace TrustPay.Application.Common.Authentication.Commands.Login
                 return Error.Unauthorized("Auth.InvalidCredentials", "Неверный email или пароль.");
             }
             var token = _jwtTokenGenerator.GenerateAccessToken(user);
-            var (refreshToken, expireAt) = _jwtTokenGenerator.GenerateRefreshToken();
-            user.AddRefreshToken(refreshToken, expireAt);
+            var (refreshToken,refreshTokenHash,expireAt) = _jwtTokenGenerator.GenerateRefreshToken();
+            user.AddRefreshToken(refreshTokenHash, expireAt);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             var response = new AuthenticationResponse(
                 Id: user.Id,

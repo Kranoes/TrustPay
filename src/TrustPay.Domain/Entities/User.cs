@@ -161,7 +161,7 @@ namespace TrustPay.Domain.Entities
 
         public Result RevokeRefreshToken(string token)
         {
-            var refreshToken = _refreshTokens.FirstOrDefault(t => t.Token == token);
+            var refreshToken = _refreshTokens.FirstOrDefault(t => t.TokenHash == token);
             if (refreshToken is null)
             {
                 return Error.NotFound("User.TokenNotFound", "Токен не найден.");

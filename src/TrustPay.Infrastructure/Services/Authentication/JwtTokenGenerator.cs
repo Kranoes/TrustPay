@@ -40,13 +40,20 @@ namespace TrustPay.Infrastructure.Services.Authentication
             return tokenHandler.WriteToken(token);
 
         }
-        public (string token,DateTime expireAt) GenerateRefreshToken()
+        public (string token,string tokenHash, DateTime expireAt) GenerateRefreshToken()
         {
             var randomBytes = new byte[64];
             RandomNumberGenerator.Fill(randomBytes);
             var token = Convert.ToBase64String(randomBytes);
+            var tokenHash = GetRefreshTokenHash(token);
             var expireAt = DateTime.UtcNow.AddDays(_jwtOptions.Value.RefreshTokenExpiryDays);
-            return (token, expireAt);
+            return (token, tokenHash, expireAt);
+        }
+        public string GetRefreshTokenHash(string token)
+        {
+            using var sha256 = SHA256.Create();
+            var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(token));
+            return Convert.ToBase64String(hash);
         }
     }
 }

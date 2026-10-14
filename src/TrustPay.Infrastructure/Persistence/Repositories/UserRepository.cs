@@ -41,7 +41,7 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users
             .Include(u => u.RefreshTokens)
-            .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == refreshToken), cancellationToken);
+            .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.TokenHash == refreshToken), cancellationToken);
     }
 
     public async Task<User?> GetByWalletIdAsync(Guid walletId, CancellationToken cancellationToken = default)

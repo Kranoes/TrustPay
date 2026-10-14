@@ -6,7 +6,7 @@ namespace TrustPay.Domain.Entities;
 public class RefreshToken
 {
     public Guid Id { get; init; }
-    public string Token { get; init; } = null!;
+    public string TokenHash { get; init; } = null!;
     public DateTime CreatedAt { get; init; }
     public DateTime ExpireAt { get; init; }
     public DateTime? RevokedAt { get; private set; }
@@ -20,7 +20,7 @@ public class RefreshToken
     private RefreshToken(string token, DateTime createdAt, DateTime expireAt, Guid userId)
     {
         Id = Guid.NewGuid();
-        Token = token;
+        TokenHash = token;
         CreatedAt = createdAt;
         ExpireAt = expireAt;
         UserId = userId;
