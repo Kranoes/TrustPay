@@ -70,7 +70,7 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands
             var newAcessToken = "new acess token";
             var newRefreshToken = "new Refresh Token";
             var tokenExpiration = DateTime.UtcNow.AddDays(7);
-
+            var tokenHash = "hashed token";
             var command = new RefreshTokenCommand(oldRefreshToken);
             var testUser = CreateTestUser(Guid.NewGuid());
             testUser.AddRefreshToken(oldRefreshToken, DateTime.UtcNow.AddDays(1));
@@ -80,7 +80,7 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands
             _jwtTokenGeneratorMock.GenerateAccessToken(testUser)
                 .Returns(newAcessToken);
             _jwtTokenGeneratorMock.GenerateRefreshToken()
-                .Returns((newRefreshToken,tokenExpiration));
+                .Returns((newRefreshToken,tokenHash,tokenExpiration));
 
             var result = await _handler.Handle(command, CancellationToken.None);
 

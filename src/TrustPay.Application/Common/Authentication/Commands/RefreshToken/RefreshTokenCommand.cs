@@ -33,15 +33,15 @@ namespace TrustPay.Application.Common.Authentication.Commands.RefreshToken
             {
                 return Error.NotFound("User.NotFound","Пользователь с данным токеном не найден.");
             }
-            var activeRefreshToken = user.RefreshTokens.FirstOrDefault(rt => rt.Token == request.RefreshToken && !rt.IsExpired);
+            var activeRefreshToken = user.RefreshTokens.FirstOrDefault(rt => rt.TokenHash == request.RefreshToken && !rt.IsExpired);
             if (activeRefreshToken is null)
             {
                 return Error.Unauthorized("Auth.ExpiredToken","Срок действия Refresh Token истек.");
             }
             var newAccessToken = _jwtTokenGenerator.GenerateAccessToken(user);
-            var (newRefreshToken,expireAt) = _jwtTokenGenerator.GenerateRefreshToken();
+            var (newRefreshToken,RefreshtokenHash,expireAt) = _jwtTokenGenerator.GenerateRefreshToken();
             user.RevokeRefreshToken(request.RefreshToken);
-            user.AddRefreshToken(newRefreshToken, expireAt);
+            user.AddRefreshToken(RefreshtokenHash, expireAt);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             var response = new AuthenticationResponse(
                 user.Id,

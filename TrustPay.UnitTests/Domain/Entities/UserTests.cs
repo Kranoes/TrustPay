@@ -22,7 +22,7 @@ namespace TrustPay.UnitTests.Domain.Entities
             user.RefreshTokens.Should().HaveCount(1);
 
             var addedToken = user.RefreshTokens.Single();
-            addedToken.Token.Should().Be(tokenValue);
+            addedToken.TokenHash.Should().Be(tokenValue);
             addedToken.ExpireAt.Should().Be(expiresAt);
             addedToken.IsExpired.Should().BeFalse();
 
@@ -39,7 +39,7 @@ namespace TrustPay.UnitTests.Domain.Entities
             var result = user.RevokeRefreshToken(tokenValue);
 
             result.IsSuccess.Should().BeTrue();
-            var token = user.RefreshTokens.Single(t => t.Token == tokenValue);
+            var token = user.RefreshTokens.Single(t => t.TokenHash == tokenValue);
             token.IsRevoked.Should().BeTrue();
         }
     }

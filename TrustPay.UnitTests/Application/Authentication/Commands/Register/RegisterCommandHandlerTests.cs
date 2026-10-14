@@ -92,6 +92,7 @@ public class RegisterCommandHandlerTests
         var password = "correct_password";
         var expectedAccessToken = "access_token";
         var expectedRefreshToken = "refresh_token";
+        var tokenHash = "hashed_token";
 
         var command = new RegisterCommand(nickName, email, password);
 
@@ -104,7 +105,7 @@ public class RegisterCommandHandlerTests
             .Returns("Hashed_password");
 
         _jwtTokenGeneratorMock.GenerateRefreshToken()
-            .Returns((expectedRefreshToken, DateTime.UtcNow.AddDays(7)));
+            .Returns((expectedRefreshToken, tokenHash, DateTime.UtcNow.AddDays(7)));
         _jwtTokenGeneratorMock.GenerateAccessToken(Arg.Any<User>())
             .Returns(expectedAccessToken);
 
