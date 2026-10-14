@@ -11,8 +11,8 @@ using TrustPay.Application.Wallets.Commands.FreezeWallet;
 using TrustPay.Application.Wallets.Commands.TransferMoney;
 using TrustPay.Application.Wallets.Commands.UnfreezeWallet;
 using TrustPay.Application.Wallets.Commands.WithdrawMoney;
-using TrustPay.Application.Wallets.DTOs;
 using TrustPay.Application.Wallets.Queries.GetWalletById;
+using TrustPay.Application.Wallets.Queries.GetWalletByUserId;
 using TrustPay.Domain.Enums;
 
 /// <summary>
@@ -222,6 +222,22 @@ public class WalletsController : ApiController
 
         return BadRequest("Недопустимый статус для обновления.");
     }
+    [Authorize(Roles = $"{nameof(UserRole.Admin)}")]
+    [HttpGet("user/{userId:guid}")]
+    [ProducesResponseType(typeof(WalletResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetWalletByUserId(
+        [FromRoute] Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetWalletByUserIdQuery(userId);
+        var result = await Mediator.Send(query, cancellationToken);
+        return HandleResult(result);
+    }
+
+
+
 }
 
 public record CreateWalletRequest(Guid UserId, decimal InitialAmount = 0, string Currency = "RUB");

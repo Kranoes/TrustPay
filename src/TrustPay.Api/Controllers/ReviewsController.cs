@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrustPay.Application.Reviews.Commands.CreateReview;
 using TrustPay.Application.Reviews.Commands.DeleteReview;
-using TrustPay.Application.Reviews.Commands.UpdateReview;
 using TrustPay.Application.Reviews.DTOs;
 using TrustPay.Application.Reviews.Queries.GetById;
 using TrustPay.Application.Reviews.Queries.GetByOrderId;

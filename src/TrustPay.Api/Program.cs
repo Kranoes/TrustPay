@@ -1,6 +1,7 @@
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
+using TrustPay.Api.Documentation;
 using TrustPay.Api.Logging;
 using TrustPay.Application;
 using TrustPay.Application.Common.Authentication.Commands.Login;
@@ -24,6 +25,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddOpenApi(options =>
 {
+    options.AddDocumentTransformer<TrustPayDocumentTransformer>();
     options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
         var securityScheme = new OpenApiSecurityScheme
@@ -33,7 +35,7 @@ builder.Services.AddOpenApi(options =>
             Scheme = "Bearer",
             BearerFormat = "JWT",
             In = ParameterLocation.Header,
-            Description = "Введите JWT токен"
+            Description = "Вставьте access-токен из ответа POST /api/auth/login (поле token). Слово Bearer писать не нужно."
         };
 
         document.Components ??= new OpenApiComponents();
@@ -61,7 +63,11 @@ if (app.Environment.IsDevelopment())
     }
 
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options.WithTitle("TrustPay API");
+        options.AddPreferredSecuritySchemes("Bearer");
+    });
 }
 
 app.UseExceptionHandler();
