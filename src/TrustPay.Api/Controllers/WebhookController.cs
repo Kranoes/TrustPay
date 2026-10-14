@@ -1,10 +1,7 @@
-﻿using System.IO;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrustPay.Api.Filters;
-using TrustPay.Application.Common.Interfaces;
 using TrustPay.Application.Common.Interfaces.Webhook;
 using TrustPay.Application.Common.Transactions.Commands.ProcessBankWebhook;
 
