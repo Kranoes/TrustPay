@@ -35,7 +35,12 @@ namespace TrustPay.Application.Common.Authentication.Commands.Login
             }
             var token = _jwtTokenGenerator.GenerateAccessToken(user);
             var (refreshToken,refreshTokenHash,expireAt) = _jwtTokenGenerator.GenerateRefreshToken();
-            user.AddRefreshToken(refreshTokenHash, expireAt);
+            var resultAdd = user.AddRefreshToken(refreshTokenHash, expireAt);
+            if (resultAdd.IsFailure)
+            {
+                return resultAdd.Error;
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             var response = new AuthenticationResponse(
                 Id: user.Id,

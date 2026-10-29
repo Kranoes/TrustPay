@@ -65,7 +65,12 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         await _userRepository.AddAsync(user, cancellationToken);
 
         var (refreshToken,refreshTokenHash,expireAt) = _jwtTokenGenerator.GenerateRefreshToken();
-        user.AddRefreshToken(refreshTokenHash, expireAt);
+        var resultAdd = user.AddRefreshToken(refreshTokenHash, expireAt);
+
+        if (resultAdd.IsFailure)
+        {
+            return resultAdd.Error;
+        }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
