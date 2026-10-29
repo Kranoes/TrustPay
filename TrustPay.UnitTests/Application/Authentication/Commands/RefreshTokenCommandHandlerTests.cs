@@ -94,6 +94,7 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands
                 ));
             await _unitOfWorkMock.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         }
+        
         private static User CreateTestUser(Guid userId)
         {
             return User.Create("test@example.com", "TestUser", "PasswordHash", UserRole.User).Value;

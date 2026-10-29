@@ -22,6 +22,7 @@ namespace TrustPay.Domain.Entities
         private readonly List<RefreshToken> _refreshTokens = new();
         public IReadOnlyCollection<RefreshToken> RefreshTokens => _refreshTokens.AsReadOnly();
         private const int MaxActiveTokens = 5;
+        private const int MaxAbandonedToken = 30;
         private const int NickNameChangeIntervalDays = 30;
 
         public DateTime? NextAllowedNickNameChangeAt =>
@@ -146,15 +147,32 @@ namespace TrustPay.Domain.Entities
             {
                 return result.Error;
             }
-
-            _refreshTokens.RemoveAll(t => !t.IsActive);
-
-            if (_refreshTokens.Count >= MaxActiveTokens)
+            var expiredTokens = _refreshTokens.Where(t => t.IsExpired).ToList();
+            foreach (var expToken in expiredTokens)
             {
-                var oldestToken = _refreshTokens.OrderBy(t => t.CreatedAt).First();
-                _refreshTokens.Remove(oldestToken);
+                _refreshTokens.Remove(expToken);
             }
 
+            var countOfActiveTokens = _refreshTokens.Count(t => t.IsActive);
+            if (countOfActiveTokens > MaxActiveTokens )
+            {
+                var oldestToken = _refreshTokens.OrderBy(t => t.CreatedAt).First(t=>t.IsActive);
+                RevokeRefreshToken(oldestToken.TokenHash);
+            }
+            var countOfAbandoned = _refreshTokens.Count(t=>t.IsRevoked);
+            if (countOfAbandoned >= MaxAbandonedToken)
+            {
+                while (countOfAbandoned >= MaxAbandonedToken)
+                {
+                    var tokenShouldRevoke = _refreshTokens.OrderBy(t => t.CreatedAt).FirstOrDefault(t => t.IsRevoked == true);
+                    if (tokenShouldRevoke is null)
+                    {
+                        break;
+                    }
+                    _refreshTokens.Remove(tokenShouldRevoke);
+                    countOfAbandoned--;
+                }
+            }
             _refreshTokens.Add(result.Value);
             return Result.Success();
         }

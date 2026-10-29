@@ -12,6 +12,7 @@ namespace TrustPay.Infrastructure.Persistence.Configurations
             public void Configure(EntityTypeBuilder<RefreshToken> builder)
         {
             builder.HasIndex(r=>r.TokenHash);
+            builder.Property(r=>r.Id).ValueGeneratedNever();
         }
               
     }

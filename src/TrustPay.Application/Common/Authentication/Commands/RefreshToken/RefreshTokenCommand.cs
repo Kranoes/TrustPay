@@ -27,21 +27,29 @@ namespace TrustPay.Application.Common.Authentication.Commands.RefreshToken
         }
         public async Task<Result<AuthenticationResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
         {
-
-            var user = await _userRepository.GetByRefreshTokenAsync(request.RefreshToken,cancellationToken);
+            var latestTokenHash = _jwtTokenGenerator.GetRefreshTokenHash(request.RefreshToken);
+            var user = await _userRepository.GetByRefreshTokenAsync(latestTokenHash, cancellationToken);
             if (user is null)
             {
                 return Error.NotFound("User.NotFound","Пользователь с данным токеном не найден.");
             }
-            var activeRefreshToken = user.RefreshTokens.FirstOrDefault(rt => rt.TokenHash == request.RefreshToken && !rt.IsExpired);
+            var activeRefreshToken = user.RefreshTokens.FirstOrDefault(rt => rt.TokenHash == latestTokenHash && rt.IsActive);
             if (activeRefreshToken is null)
             {
-                return Error.Unauthorized("Auth.ExpiredToken","Срок действия Refresh Token истек.");
+                return Error.Unauthorized("Auth.ExpiredToken","Срок действия Refresh Token истек или токен неактивен.");
             }
             var newAccessToken = _jwtTokenGenerator.GenerateAccessToken(user);
             var (newRefreshToken,RefreshtokenHash,expireAt) = _jwtTokenGenerator.GenerateRefreshToken();
-            user.RevokeRefreshToken(request.RefreshToken);
-            user.AddRefreshToken(RefreshtokenHash, expireAt);
+           var resultRevoke = user.RevokeRefreshToken(latestTokenHash);
+            if (resultRevoke.IsFailure)
+            {
+                return resultRevoke.Error;
+            }
+            var resultAdd =user.AddRefreshToken(RefreshtokenHash, expireAt);
+            if (resultAdd.IsFailure)
+            {
+                return resultAdd.Error;
+            }
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             var response = new AuthenticationResponse(
                 user.Id,
