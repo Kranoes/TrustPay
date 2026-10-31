@@ -17,18 +17,18 @@ public class RefreshToken
 
     private RefreshToken() { }
 
-    private RefreshToken(string token, DateTime createdAt, DateTime expireAt, Guid userId)
+    private RefreshToken(string tokenHash, DateTime createdAt, DateTime expireAt, Guid userId)
     {
         Id = Guid.NewGuid();
-        TokenHash = token;
+        TokenHash = tokenHash;
         CreatedAt = createdAt;
         ExpireAt = expireAt;
         UserId = userId;
     }
 
-    public static Result<RefreshToken> Create(string token, DateTime expireAt, Guid userId)
+    public static Result<RefreshToken> Create(string tokenHash, DateTime expireAt, Guid userId)
     {
-        if (string.IsNullOrWhiteSpace(token))
+        if (string.IsNullOrWhiteSpace(tokenHash))
         {
             return Result<RefreshToken>.Failure("Неверный формат токена.");
         }
@@ -37,7 +37,7 @@ public class RefreshToken
             return Result<RefreshToken>.Failure("Срок действия токена не может быть в прошлом.");
         }
 
-        var refreshToken = new RefreshToken(token, DateTime.UtcNow, expireAt, userId);
+        var refreshToken = new RefreshToken(tokenHash, DateTime.UtcNow, expireAt, userId);
         return Result<RefreshToken>.Success(refreshToken);
     }
 
