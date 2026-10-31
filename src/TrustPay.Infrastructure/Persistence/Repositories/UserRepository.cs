@@ -37,11 +37,11 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
     }
 
-    public async Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByRefreshTokenAsync(string refreshTokenHash, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .Include(u => u.RefreshTokens)
-            .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.TokenHash == refreshToken), cancellationToken);
+            .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.TokenHash == refreshTokenHash), cancellationToken);
     }
 
     public async Task<User?> GetByWalletIdAsync(Guid walletId, CancellationToken cancellationToken = default)
