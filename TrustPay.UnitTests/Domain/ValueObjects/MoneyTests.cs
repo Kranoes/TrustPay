@@ -25,7 +25,7 @@ public class MoneyTests
         var result = Money.Create(-100m, "RUB");
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Description.Should().Be("Сумма должна быть больше 0");
+        result.Error.Description.Should().Be("Сумма не может быть отрицательной.");
     }
 
     [Fact]

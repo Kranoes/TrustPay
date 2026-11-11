@@ -76,8 +76,9 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateTran
             var senderWalletId = Guid.NewGuid();
             var receiverWalletId = Guid.NewGuid();
 
-            var senderWallet = Substitute.For<Wallet>();
-            senderWallet.UserId.Returns(alienUserId);
+            var senderWalletResult = Wallet.Create(alienUserId, Money.Zero("RUB").Value);
+            senderWalletResult.IsSuccess.Should().BeTrue();
+            var senderWallet = senderWalletResult.Value;
 
             var amount = Money.Create(100, "RUB").Value;
             var command = new CreateTransferCommand(senderWalletId, receiverWalletId, amount);
@@ -101,8 +102,9 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateTran
             var senderId = Guid.NewGuid();
             var receiverId = Guid.NewGuid();
 
-            var senderWallet = Substitute.For<Wallet>();
-            senderWallet.UserId.Returns(userId);
+            var senderWalletResult = Wallet.Create(userId, Money.Zero("RUB").Value);
+            senderWalletResult.IsSuccess.Should().BeTrue();
+            var senderWallet = senderWalletResult.Value;
 
             var amount = Money.Create(100, "RUB").Value;
             var command = new CreateTransferCommand(senderId, receiverId, amount);
@@ -129,18 +131,19 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateTran
             var senderId = Guid.NewGuid();
             var receiverId = Guid.NewGuid();
 
-            var senderWallet = Substitute.For<Wallet>();
-            senderWallet.UserId.Returns(userId);
-
-            var receiverWallet = Substitute.For<Wallet>();
-
+            var senderWalletResult = Wallet.Create(userId,Money.Zero("RUB").Value);
+            senderWalletResult.IsSuccess.Should().BeTrue();
+            var senderWallet = senderWalletResult.Value;
+            var receiverWalletResult = Wallet.Create(receiverId, Money.Zero("RUB").Value);
+            receiverWalletResult.IsSuccess.Should().BeTrue();
+            var receiverWallet = receiverWalletResult.Value;
             var amount = Money.Create(100, "RUB").Value;
-            var command = new CreateTransferCommand(senderId, receiverId, amount);
+            var command = new CreateTransferCommand(senderWallet.Id, receiverWallet.Id, amount);
 
             _currentUserServiceMock.UserId.Returns(userId);
-            _walletRepositoryMock.GetByIdAsync(senderId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(senderWallet.Id, Arg.Any<CancellationToken>())
                 .Returns(senderWallet);
-            _walletRepositoryMock.GetByIdAsync(receiverId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(receiverWallet.Id, Arg.Any<CancellationToken>())
                 .Returns(receiverWallet);
 
             var result = await _handler.Handle(command, CancellationToken.None);

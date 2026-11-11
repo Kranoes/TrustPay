@@ -140,9 +140,9 @@ namespace TrustPay.Domain.Entities
             return Result.Success();
         }
 
-        public Result AddRefreshToken(string token, DateTime expireAt)
+        public Result AddRefreshToken(string tokenHash, DateTime expireAt)
         {
-            var result = RefreshToken.Create(token, expireAt, Id);
+            var result = RefreshToken.Create(tokenHash, expireAt, Id);
             if (result.IsFailure)
             {
                 return result.Error;
@@ -177,9 +177,9 @@ namespace TrustPay.Domain.Entities
             return Result.Success();
         }
 
-        public Result RevokeRefreshToken(string token)
+        public Result RevokeRefreshToken(string tokenHash)
         {
-            var refreshToken = _refreshTokens.FirstOrDefault(t => t.TokenHash == token);
+            var refreshToken = _refreshTokens.FirstOrDefault(t => t.TokenHash == tokenHash);
             if (refreshToken is null)
             {
                 return Error.NotFound("User.TokenNotFound", "Токен не найден.");

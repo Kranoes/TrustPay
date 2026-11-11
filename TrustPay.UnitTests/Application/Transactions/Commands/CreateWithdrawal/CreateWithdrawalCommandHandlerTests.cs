@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
+using NSubstitute.ReceivedExtensions;
 using TrustPay.Application.Common.Interfaces;
 using TrustPay.Application.Common.Interfaces.Auth;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
@@ -58,16 +59,15 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateWith
         {
             var currentUserId = Guid.NewGuid();
             var alienUserId = Guid.NewGuid();
-            var walletId = Guid.NewGuid();
-
-            var wallet = Substitute.For<Wallet>();
-            wallet.UserId.Returns(alienUserId);
+            var walletResult = Wallet.Create(alienUserId,Money.Zero("RUB").Value);
+            walletResult.IsSuccess.Should().BeTrue();
+            var wallet = walletResult.Value;
 
             var amount = Money.Create(100, "RUB").Value;
-            var command = new CreateWithdrawalCommand(walletId, amount);
+            var command = new CreateWithdrawalCommand(wallet.Id, amount);
 
             _currentUserServiceMock.UserId.Returns(currentUserId);
-            _walletRepositoryMock.GetByIdAsync(walletId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(wallet.Id, Arg.Any<CancellationToken>())
                 .Returns(wallet);
 
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -82,21 +82,25 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateWith
         public async Task Handle_ShouldCreateWithdrawalTransaction_WhenWalletBelongsToCurrentUserAndDataIsValid()
         {
             var userId = Guid.NewGuid();
-            var walletId = Guid.NewGuid();
-
-            var wallet = Substitute.For<Wallet>();
-            wallet.UserId.Returns(userId);
-
+            var walletResult = Wallet.Create(userId,Money.Zero("RUB").Value);
+            walletResult.IsSuccess.Should().BeTrue();
+            var wallet = walletResult.Value;
+            Transaction? transaction = null;
             var amount = Money.Create(100, "RUB").Value;
-            var command = new CreateWithdrawalCommand(walletId, amount);
-
+            var command = new CreateWithdrawalCommand(wallet.Id, amount);
             _currentUserServiceMock.UserId.Returns(userId);
-            _walletRepositoryMock.GetByIdAsync(walletId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(wallet.Id, Arg.Any<CancellationToken>())
                 .Returns(wallet);
 
+            _transactionRepositoryMock.AddAsync(Arg.Do<Transaction>(t=> transaction = t),Arg.Any<CancellationToken>());
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
+            transaction.Should().NotBeNull();
+            transaction.Type.Should().Be(TrustPay.Domain.Enums.TransactionType.Withdrawal);
+            transaction.Amount.Should().Be(amount);
+            transaction.ReceiverWalletId.Should().BeNull();
+            transaction.SenderWalletId.Should().Be(wallet.Id);
             await _transactionRepositoryMock.Received(1).AddAsync(Arg.Any<Transaction>(), Arg.Any<CancellationToken>());
             await _unitOfWorkMock.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         }

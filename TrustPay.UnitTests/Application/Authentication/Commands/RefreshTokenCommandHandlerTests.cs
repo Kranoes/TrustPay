@@ -48,17 +48,27 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands
         public async Task Handle_ShouldReturnFailure_WhenRefreshTokenIsExpiredOrInvalid()
         {
             var token = "expired token";
+            var OldestTokenHash = "expired-token-hash";
+            var newToken = "new-token";
+            var newTokenHash = "new-token-hash";
             var command = new RefreshTokenCommand(token);
             var testUser = CreateTestUser(Guid.NewGuid());
-            _userRepositoryMock.GetByRefreshTokenAsync(token, Arg.Any<CancellationToken>())
+            testUser.AddRefreshToken(OldestTokenHash,DateTime.UtcNow.AddDays(5));
+            _jwtTokenGeneratorMock.GetRefreshTokenHash(token)
+                .Returns(OldestTokenHash);
+            _userRepositoryMock.GetByRefreshTokenAsync(OldestTokenHash, Arg.Any<CancellationToken>())
                 .Returns(testUser);
-            testUser.AddRefreshToken(token, DateTime.UtcNow.AddDays(-1));
+            _jwtTokenGeneratorMock.GetRefreshTokenHash(newToken)
+                .Returns(newTokenHash);
+            testUser.AddRefreshToken(newTokenHash, DateTime.UtcNow.AddDays(7));
+            testUser.RevokeRefreshToken(OldestTokenHash);
 
             var result = await _handler.Handle(command,CancellationToken.None);
+            var revokedToken = testUser.RefreshTokens.Single(t => t.TokenHash == OldestTokenHash);
 
             result.IsFailure.Should().BeTrue();
             result.Error.Type.Should().Be(ErrorType.Unauthorized);
-
+            revokedToken.IsRevoked.Should().BeTrue();
             await _unitOfWorkMock.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 
 
@@ -67,20 +77,22 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands
         public async Task Handle_ShouldReturnSuccessWithTokens_WhenRefreshTokenIsValid()
         {
             var oldRefreshToken = "valid refresh token";
+            var oldTokenHash = "valid token hash old";
             var newAcessToken = "new acess token";
             var newRefreshToken = "new Refresh Token";
             var tokenExpiration = DateTime.UtcNow.AddDays(7);
-            var tokenHash = "hashed token";
+            var newTokenHash = "hashed token";
             var command = new RefreshTokenCommand(oldRefreshToken);
             var testUser = CreateTestUser(Guid.NewGuid());
-            testUser.AddRefreshToken(oldRefreshToken, DateTime.UtcNow.AddDays(1));
-
-            _userRepositoryMock.GetByRefreshTokenAsync(oldRefreshToken, Arg.Any<CancellationToken>())
+            _jwtTokenGeneratorMock.GetRefreshTokenHash(oldRefreshToken)
+                .Returns(oldTokenHash);
+            testUser.AddRefreshToken(oldTokenHash, DateTime.UtcNow.AddDays(1));
+            _userRepositoryMock.GetByRefreshTokenAsync(oldTokenHash, Arg.Any<CancellationToken>())
                 .Returns(testUser);
             _jwtTokenGeneratorMock.GenerateAccessToken(testUser)
                 .Returns(newAcessToken);
             _jwtTokenGeneratorMock.GenerateRefreshToken()
-                .Returns((newRefreshToken,tokenHash,tokenExpiration));
+                .Returns((newRefreshToken, newTokenHash, tokenExpiration));
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
