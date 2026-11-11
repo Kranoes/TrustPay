@@ -1,8 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using TrustPay.Application.Common.Interfaces;
@@ -64,16 +60,14 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateDepo
         {
             var currentUserId = Guid.NewGuid();
             var alienUserId = Guid.NewGuid();
-            var walletId = Guid.NewGuid();
-
-            var wallet = Substitute.For<Wallet>();
-            wallet.UserId.Returns(alienUserId);
-
+            var walletResult = Wallet.Create(alienUserId,Money.Zero("RUB").Value);
+            walletResult.IsSuccess.Should().BeTrue();
+            var wallet = walletResult.Value;
             var amount = Money.Create(100, "RUB").Value;
-            var command = new CreateDepositCommand(walletId, amount);
+            var command = new CreateDepositCommand(wallet.Id, amount);
 
             _currentUserServiceMock.UserId.Returns(currentUserId);
-            _walletRepositoryMock.GetByIdAsync(walletId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(wallet.Id, Arg.Any<CancellationToken>())
                 .Returns(wallet);
 
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -88,18 +82,14 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateDepo
         public async Task Handle_ShouldReturnValidationError_WhenTransactionCreationFails()
         {
             var userId = Guid.NewGuid();
-            var walletId = Guid.NewGuid();
-
-            var wallet = Substitute.For<Wallet>();
-            wallet.UserId.Returns(userId);
-
+            var walletResult = Wallet.Create(userId, Money.Zero("RUB").Value);
+            walletResult.IsSuccess.Should().BeTrue();
+            var wallet = walletResult.Value;
             var zeroAmount = Money.Create(0, "RUB").Value;
-            var command = new CreateDepositCommand(walletId, zeroAmount);
-
+            var command = new CreateDepositCommand(wallet.Id, zeroAmount);
             _currentUserServiceMock.UserId.Returns(userId);
-            _walletRepositoryMock.GetByIdAsync(walletId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(wallet.Id, Arg.Any<CancellationToken>())
                 .Returns(wallet);
-
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsFailure.Should().BeTrue();
@@ -111,24 +101,23 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateDepo
         public async Task Handle_ShouldReturnFailureErrorAndMarkTransactionFailed_WhenPaymentGatewayThrowsException()
         {
             var userId = Guid.NewGuid();
-            var walletId = Guid.NewGuid();
-
-            var wallet = Substitute.For<Wallet>();
-            wallet.UserId.Returns(userId);
-
+            var walletResult = Wallet.Create(userId,Money.Zero("RUB").Value);
+            walletResult.IsSuccess.Should().BeTrue();
+            var wallet = walletResult.Value; 
             var amount = Money.Create(100, "RUB").Value;
-            var command = new CreateDepositCommand(walletId, amount);
-
+            Transaction? transaction = null;
+            var command = new CreateDepositCommand(wallet.Id, amount);
             _currentUserServiceMock.UserId.Returns(userId);
-            _walletRepositoryMock.GetByIdAsync(walletId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(wallet.Id, Arg.Any<CancellationToken>())
                 .Returns(wallet);
-
             _paymentGatewayServiceMock.CreatePaymentFormAsync(Arg.Any<Guid>(), Arg.Any<Money>(), Arg.Any<CancellationToken>())
                 .ThrowsAsync(new HttpRequestException("Gateway unavailable"));
 
+            _transactionRepositoryMock.AddAsync(Arg.Do<Transaction>(t=>transaction = t),Arg.Any<CancellationToken>());
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsFailure.Should().BeTrue();
+            transaction.Status.Should().Be(TrustPay.Domain.Enums.TransactionStatus.Failed);
             result.Error.Code.Should().Be("PaymentGateway.Error");
             result.Error.Type.Should().Be(ErrorType.Failure);
             await _unitOfWorkMock.Received(2).SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -138,25 +127,21 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateDepo
         public async Task Handle_ShouldCreateDepositAndReturnPaymentUrl_WhenSuccessful()
         {
             var userId = Guid.NewGuid();
-            var walletId = Guid.NewGuid();
-
-            var wallet = Substitute.For<Wallet>();
-            wallet.UserId.Returns(userId);
-
+            var walletResult = Wallet.Create(userId,Money.Zero("RUB").Value);
+            walletResult.IsSuccess.Should().BeTrue();
+            var wallet = walletResult.Value;
             var amount = Money.Create(100, "RUB").Value;
-            var command = new CreateDepositCommand(walletId, amount);
-
+            var command = new CreateDepositCommand(wallet.Id, amount);
             _currentUserServiceMock.UserId.Returns(userId);
-            _walletRepositoryMock.GetByIdAsync(walletId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(wallet.Id, Arg.Any<CancellationToken>())
                 .Returns(wallet);
-
             _paymentGatewayServiceMock.CreatePaymentFormAsync(Arg.Any<Guid>(), Arg.Any<Money>(), Arg.Any<CancellationToken>())
-                .Returns(new PaymentGatewayResult("https://fake-bank.com/checkout/123", "ext_123"));
+                .Returns(new PaymentGatewayResult("https://mok-bank.com/checkout/123", "ext_123"));
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.PaymentUrl.Should().Be("https://fake-bank.com/checkout/123");
+            result.Value.PaymentUrl.Should().Be("https://mok-bank.com/checkout/123");
             await _transactionRepositoryMock.Received(1).AddAsync(Arg.Any<Transaction>(), Arg.Any<CancellationToken>());
             await _unitOfWorkMock.Received(2).SaveChangesAsync(Arg.Any<CancellationToken>());
         }

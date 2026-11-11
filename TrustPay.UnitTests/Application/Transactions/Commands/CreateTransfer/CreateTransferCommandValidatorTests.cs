@@ -31,7 +31,7 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateTran
             var result = _validator.TestValidate(command);
 
             result.ShouldHaveValidationErrorFor(x => x.SenderWalletId)
-                .WithErrorMessage("Идентификатор отправителя не может быть пустым.");
+                .WithErrorMessage("Идентификатор кошелька отправителя не может быть пустым.");
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateTran
             var result = _validator.TestValidate(command);
 
             result.ShouldHaveValidationErrorFor(x => x.ReceiverWalletId)
-                .WithErrorMessage("Идентификатор получателя не может быть пустым.");
+                .WithErrorMessage("Идентификатор кошелька получателя не может быть пустым.");
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.Commands.CreateTran
             var result = _validator.TestValidate(command);
 
             result.ShouldHaveValidationErrorFor(x => x.ReceiverWalletId)
-                .WithErrorMessage("Нельзя перевести средства самому себе.");
+                .WithErrorMessage("Кошелек получателя не может совпадать с кошельком отправителя.");
         }
 
         [Fact]

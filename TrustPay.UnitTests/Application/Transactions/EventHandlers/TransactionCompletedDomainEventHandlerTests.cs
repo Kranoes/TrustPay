@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using NSubstitute;
 using TrustPay.Application.Common.Interfaces;
 using TrustPay.Application.Common.Interfaces.EntitiesRepo;
@@ -11,7 +8,6 @@ using TrustPay.Domain.Common;
 using TrustPay.Domain.Entities;
 using TrustPay.Domain.Events.TransactionsEvents;
 using TrustPay.Domain.ValueObjects;
-using Xunit;
 
 namespace TrustPay.UnitTests.Application.Common.Transactions.EventHandlers
 {
@@ -73,20 +69,18 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.EventHandlers
         [Fact]
         public async Task Handle_ShouldDoNothing_WhenDepositFails()
         {
-            var walletId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var walletMock = Wallet.Create(userId,Money.Zero("RUB").Value).Value;
             var amount = Money.Create(100, "RUB").Value;
             var domainEvent = new TransactionCompletedDomainEvent(
                 Guid.NewGuid(),
-                walletId,
+                walletMock.Id,
                 amount,
                 "Card");
-
+            var freezeResult = walletMock.Freeze();
+            freezeResult.IsSuccess.Should().BeTrue();
             var notification = new DomainEventNotification<TransactionCompletedDomainEvent>(domainEvent);
-
-            var walletMock = Substitute.For<Wallet>();
-            walletMock.Deposit(amount).Returns(Result.Failure(Error.Validation("Wallet.Error", "Ошибка пополнения")));
-
-            _walletRepositoryMock.GetByIdAsync(walletId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(walletMock.Id, Arg.Any<CancellationToken>())
                 .Returns(walletMock);
 
             await _handler.Handle(notification, CancellationToken.None);
@@ -97,25 +91,21 @@ namespace TrustPay.UnitTests.Application.Common.Transactions.EventHandlers
         [Fact]
         public async Task Handle_ShouldDepositAndSaveChanges_WhenWalletExistsAndDepositSucceeds()
         {
-            var walletId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var walletMock = Wallet.Create(userId, Money.Zero("RUB").Value).Value;
             var amount = Money.Create(100, "RUB").Value;
             var domainEvent = new TransactionCompletedDomainEvent(
                 Guid.NewGuid(),
-                walletId,
+                walletMock.Id,
                 amount,
                 "Card");
-
             var notification = new DomainEventNotification<TransactionCompletedDomainEvent>(domainEvent);
-
-            var walletMock = Substitute.For<Wallet>();
-            walletMock.Deposit(amount).Returns(Result.Success());
-
-            _walletRepositoryMock.GetByIdAsync(walletId, Arg.Any<CancellationToken>())
+            _walletRepositoryMock.GetByIdAsync(walletMock.Id, Arg.Any<CancellationToken>())
                 .Returns(walletMock);
 
             await _handler.Handle(notification, CancellationToken.None);
 
-            walletMock.Received(1).Deposit(amount);
+            walletMock.AvailableBalance.Should().Be(amount);
             await _unitOfWorkMock.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         }
     }

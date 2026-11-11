@@ -85,7 +85,7 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands.Login
 
             _userRepositoryMock.GetByEmailAsync(email, Arg.Any<CancellationToken>())
                 .Returns(user);
-            _passwordHasherMock.VerifyPassword(password, user.PasswordHash)
+            _passwordHasherMock.VerifyPassword( user.PasswordHash, password)
                 .Returns(true);
             _jwtTokenGeneratorMock.GenerateAccessToken(user).Returns(expectedAccessToken);
             _jwtTokenGeneratorMock.GenerateRefreshToken().Returns((expectedRefreshToken, tokenHash, DateTime.UtcNow.AddDays(7)));
