@@ -19,5 +19,8 @@ jobs:
      - uses: actions/setup-dotnet@v4
        with:
          dotnet-version: 10
+     - run: dotnet format --verify-no-changes
+       continue-on-error: true
      - run: dotnet build
      - run: dotnet test
+      
