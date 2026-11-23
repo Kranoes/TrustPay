@@ -13,15 +13,18 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result>
     private readonly IUserRepository _userRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
     public LogoutCommandHandler(
         IUserRepository userRepository,
         ICurrentUserService currentUserService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IJwtTokenGenerator jwtTokenGenerator)
     {
         _userRepository = userRepository;
         _currentUserService = currentUserService;
         _unitOfWork = unitOfWork;
+        _jwtTokenGenerator = jwtTokenGenerator;
     }
 
     public async Task<Result> Handle(LogoutCommand request, CancellationToken cancellationToken)
@@ -37,8 +40,8 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result>
         {
             return Error.NotFound("User.NotFound", "Пользователь не найден.");
         }
-
-        var revokeResult = user.RevokeRefreshToken(request.RefreshToken);
+        var tokenHash = _jwtTokenGenerator.GetRefreshTokenHash(request.RefreshToken);
+        var revokeResult = user.RevokeRefreshToken(tokenHash);
         if (revokeResult.IsFailure)
         {
             return revokeResult;

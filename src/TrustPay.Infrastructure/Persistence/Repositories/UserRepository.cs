@@ -20,6 +20,7 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.Users
+            .Include(u=>u.RefreshTokens)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
     }
 
