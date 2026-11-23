@@ -15,16 +15,19 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands.Logout
         private readonly IUserRepository _userRepositoryMock;
         private readonly ICurrentUserService _currentUserServiceMock;
         private readonly IUnitOfWork _unitOfWorkMock;
+        private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly LogoutCommandHandler _handler;
         public LogoutCommandHandlerTests()
         {
             _userRepositoryMock = Substitute.For<IUserRepository>();
             _currentUserServiceMock = Substitute.For<ICurrentUserService>();
             _unitOfWorkMock = Substitute.For<IUnitOfWork>();
+            _jwtTokenGenerator = Substitute.For<IJwtTokenGenerator>();
             _handler = new LogoutCommandHandler(
                 _userRepositoryMock,
                 _currentUserServiceMock,
-                _unitOfWorkMock);
+                _unitOfWorkMock,
+                _jwtTokenGenerator);
 
         }
         [Fact]
@@ -65,16 +68,20 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands.Logout
         {
             var userId = Guid.NewGuid();
             var invalidRefreshToken = "invalid-token";
+            var invalidRefreshTokenHash = "invalid-token-hash";
             var command = new LogoutCommand(invalidRefreshToken);
-
-            var user = CreateTestUser(userId);
-
+             _jwtTokenGenerator.GetRefreshTokenHash(invalidRefreshToken)
+                .Returns(invalidRefreshTokenHash);
+            var user = CreateTestUserWithActiveToken(userId, invalidRefreshToken);
             _currentUserServiceMock.UserId.Returns(userId);
             _userRepositoryMock.GetByIdAsync(userId, Arg.Any<CancellationToken>())
                 .Returns(user);
+
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsFailure.Should().BeTrue();
+            result.Error.Type.Should().Be(ErrorType.NotFound);
+            result.Error.Description.Should().Be("Токен не найден.");
             await _unitOfWorkMock.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
         }
         [Fact]
@@ -82,15 +89,20 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands.Logout
         {
             var userId = Guid.NewGuid();
             var refreshToken = "valid-refresh-token";
+            var validRefreshTokenHash = "token-hash";
+            _jwtTokenGenerator.GetRefreshTokenHash(refreshToken)
+                .Returns(validRefreshTokenHash);
             var command = new LogoutCommand(refreshToken);
-
-            var user = CreateTestUserWithActiveToken(userId, refreshToken);
-
+            var user = CreateTestUserWithActiveToken(userId, validRefreshTokenHash);
             _currentUserServiceMock.UserId.Returns(userId);
             _userRepositoryMock.GetByIdAsync(userId,Arg.Any<CancellationToken>())
                 .Returns(user);
+
             var result = await _handler.Handle(command, CancellationToken.None);
 
+            var revokedToken = user.RefreshTokens.Where(t => t.TokenHash == validRefreshTokenHash).FirstOrDefault();
+            revokedToken.Should().NotBeNull();
+            revokedToken.IsRevoked.Should().BeTrue();
             result.IsSuccess.Should().BeTrue();
             await _unitOfWorkMock.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
         }
@@ -98,10 +110,10 @@ namespace TrustPay.UnitTests.Application.Authentication.Commands.Logout
         {
             return User.Create("test@example.com", "TestUser", "PasswordHash",UserRole.User).Value;
         }
-        private static User CreateTestUserWithActiveToken(Guid userId, string refreshToken)
+        private static User CreateTestUserWithActiveToken(Guid userId, string refreshTokenHash)
         {
             var user = CreateTestUser(userId);
-            user.AddRefreshToken(refreshToken, DateTime.UtcNow.AddDays(7));
+            user.AddRefreshToken(refreshTokenHash, DateTime.UtcNow.AddDays(7));
             return user; 
         }
     }
